@@ -1,66 +1,64 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Nav from '@/components/Nav';
+import { signIn, useSession } from 'next-auth/react';
+
+export default function LandingPage() {
+  const { publicKey, connected } = useWallet();
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  // Redirect to builder only if github is connected
+  useEffect(() => {
+    if (session?.user) {
+      router.push('/builder');
+    }
+  }, [session, router]);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <>
+      <Nav />
+      <main>
+        <div className="container">
+          <section className="hero" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '6rem 0' }}>
+            <div className="animate-fade-up">
+              <p className="hero-eyebrow">Web3 Developer Identity</p>
+              <h1 className="hero-title display" style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}>
+                Your onchain story,<br />
+                <em style={{ color: 'var(--accent-orange)' }}>proven on every chain.</em>
+              </h1>
+              <p className="hero-desc" style={{ maxWidth: '600px', margin: '0 auto 3rem' }}>
+                Login with GitHub. <strong>YoChain</strong> automatically generates a
+                stunning developer profile powered by your real activity across
+                Solana, EVM (ETH/Polygon/Base/OP/BSC), and GitHub.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', margin: '0 auto', alignItems: 'center' }}>
+                <div style={{ padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', minWidth: '320px', gap: '1.5rem', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>Login to Start Building</div>
+                  {session?.user ? (
+                    <div style={{ background: '#2a2a2a', padding: '0.8rem 1.5rem', borderRadius: '100px', color: 'var(--accent-orange)' }}>
+                      Connected as {session.user.name || session.user.email}
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => signIn('github')}
+                      className="btn"
+                      style={{ background: '#fff', color: '#000', width: '100%', padding: '1rem', fontSize: '1rem' }}
+                    >
+                      Authenticate with GitHub
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
-    </div>
+    </>
   );
 }
