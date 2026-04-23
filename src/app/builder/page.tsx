@@ -108,6 +108,7 @@ export default function BuilderPage() {
   const [available, setAvailable] = useState(false);
   const [template, setTemplate] = useState('default');
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
 
   useEffect(() => {
@@ -165,124 +166,153 @@ export default function BuilderPage() {
           {/* ── Left: Form ── */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
 
-            {/* 0. Template */}
-            <div className="builder-panel">
-              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>0. Template</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
-                {[
-                  { id: 'default', label: 'DEFAULT', desc: 'Dark magazine' },
-                  { id: 'cyber',   label: 'CYBER',   desc: 'Neon green + dark' },
-                  { id: 'minimal', label: 'MINIMAL',  desc: 'Clean white + BW' },
-                  { id: 'modern',  label: 'MODERN',   desc: 'Red accent + bold' },
-                ].map(t => (
-                  <div key={t.id}
-                    onClick={() => setTemplate(t.id)}
-                    style={{ padding: '1rem', cursor: 'pointer',
-                      background: template === t.id ? '#0f0f0f' : '#0a0a0a',
-                      borderBottom: template === t.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
-                      transition: 'all 0.2s' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '1px', color: template === t.id ? 'var(--accent-orange)' : '#888' }}>{t.label}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', textTransform: 'uppercase' }}>{t.desc}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-
-            {/* 1. Profile */}
-            <div className="builder-panel">
-              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>1. Profile</h3>
-              
-              {/* Available toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: '#0a0a0a', border: '1px solid var(--border-color)', borderLeft: available ? '4px solid var(--accent-orange)' : '4px solid #333', cursor: 'pointer', transition: 'all 0.2s' }}
-                onClick={() => setAvailable(v => !v)}>
-                <div style={{ width: '40px', height: '22px', background: available ? 'var(--accent-orange)' : '#222', position: 'relative', transition: 'background 0.2s' }}>
-                  <div style={{ width: '14px', height: '14px', background: '#fff', position: 'absolute', top: '4px', left: available ? '22px' : '4px', transition: 'left 0.2s' }} />
+            {/* Tab Navigation */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
+              {[
+                { id: 0, label: 'TEMPLATE' },
+                { id: 1, label: 'PROFILE' },
+                { id: 2, label: 'BACKGROUND' },
+                { id: 3, label: 'PROJECTS' },
+                { id: 4, label: 'CONTACT' },
+              ].map(tab => (
+                <div key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  style={{ padding: '0.75rem 0.5rem', cursor: 'pointer', textAlign: 'center',
+                    background: activeTab === tab.id ? '#0f0f0f' : '#0a0a0a',
+                    borderBottom: activeTab === tab.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                    transition: 'all 0.15s' }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '1px', color: activeTab === tab.id ? 'var(--accent-orange)' : '#666' }}>{tab.label}</div>
                 </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: available ? 'var(--text-main)' : 'var(--text-muted)' }}>
-                  {available ? 'Available for Work' : 'Not Available'}
-                </span>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Photo URL</label>
-                <input type="text" className="form-input" placeholder="https://avatars.githubusercontent.com/..." value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Full Name</label>
-                <input type="text" className="form-input" placeholder="e.g. Satoshi Nakamoto" value={name} onChange={e => setName(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Role / Title</label>
-                <input type="text" className="form-input" placeholder="e.g. Full Stack Developer" value={role} onChange={e => setRole(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Bio</span>
-                  <span style={{ color: bio.length > 260 ? 'var(--accent-orange)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                    {bio.length}/300
-                  </span>
-                </label>
-                <textarea className="form-input" placeholder="I am a passionate Web3 builder..."
-                  value={bio} maxLength={300}
-                  onChange={e => setBio(e.target.value)} />
-              </div>
+              ))}
             </div>
 
-            {/* 2. Background */}
-            <div className="builder-panel">
-              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>2. Background</h3>
-              <EntryList label="Education" entries={education} setter={setEducation}
-                datePlaceholder="2020–2024" titlePlaceholder="Institut Teknologi Bandung" />
-              <div style={{ marginTop: '1.25rem' }}>
+            {/* Tab 0: Template */}
+            {activeTab === 0 && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
+                  {[
+                    { id: 'default', label: 'DEFAULT', desc: 'Dark magazine' },
+                    { id: 'cyber',   label: 'CYBER',   desc: 'Neon green + dark' },
+                    { id: 'minimal', label: 'MINIMAL',  desc: 'Clean white + BW' },
+                    { id: 'modern',  label: 'MODERN',   desc: 'Red accent + bold' },
+                  ].map(t => (
+                    <div key={t.id} onClick={() => setTemplate(t.id)}
+                      style={{ padding: '1.25rem 1rem', cursor: 'pointer',
+                        background: template === t.id ? '#0f0f0f' : '#0a0a0a',
+                        borderBottom: template === t.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                        transition: 'all 0.2s' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', letterSpacing: '1px', color: template === t.id ? 'var(--accent-orange)' : '#888' }}>{t.label}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', textTransform: 'uppercase' }}>{t.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab 1: Profile */}
+            {activeTab === 1 && (
+              <div>
+                {/* Available toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: '#0a0a0a', border: '1px solid var(--border-color)', borderLeft: available ? '4px solid var(--accent-orange)' : '4px solid #333', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => setAvailable(v => !v)}>
+                  <div style={{ width: '40px', height: '22px', background: available ? 'var(--accent-orange)' : '#222', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                    <div style={{ width: '14px', height: '14px', background: '#fff', position: 'absolute', top: '4px', left: available ? '22px' : '4px', transition: 'left 0.2s' }} />
+                  </div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: available ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                    {available ? 'Available for Work' : 'Not Available'}
+                  </span>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Photo URL</label>
+                  <input type="text" className="form-input" placeholder="https://avatars.githubusercontent.com/..." value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Full Name</label>
+                  <input type="text" className="form-input" placeholder="e.g. Satoshi Nakamoto" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Role / Title</label>
+                  <input type="text" className="form-input" placeholder="e.g. Full Stack Developer" value={role} onChange={e => setRole(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Bio</span>
+                    <span style={{ color: bio.length > 260 ? 'var(--accent-orange)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{bio.length}/300</span>
+                  </label>
+                  <textarea className="form-input" placeholder="I am a passionate Web3 builder..."
+                    value={bio} maxLength={300} onChange={e => setBio(e.target.value)} />
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Background */}
+            {activeTab === 2 && (
+              <div>
+                <EntryList label="Education" entries={education} setter={setEducation}
+                  datePlaceholder="2020–2024" titlePlaceholder="Institut Teknologi Bandung" />
                 <EntryList label="Experience" entries={experience} setter={setExperience}
                   datePlaceholder="2022–Now" titlePlaceholder="Freelance Designer" />
+                <div className="form-group">
+                  <label className="form-label">Skills (Comma Separated)</label>
+                  <textarea className="form-input" placeholder="Photoshop, Next.js, Solana..." value={skillsLine} onChange={e => setSkillsLine(e.target.value)} style={{ minHeight: '80px' }} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Languages</label>
+                  <input type="text" className="form-input" placeholder="Indonesian, English, Japanese" value={languagesLine} onChange={e => setLanguagesLine(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Certifications</label>
+                  <input type="text" className="form-input" placeholder="AWS Cloud Practitioner, Solana Bootcamp" value={certsLine} onChange={e => setCertsLine(e.target.value)} />
+                </div>
               </div>
-              <div className="form-group" style={{ marginTop: '1.25rem' }}>
-                <label className="form-label">Skills (Comma Separated)</label>
-                <textarea className="form-input" placeholder="Photoshop, Next.js, Solana..." value={skillsLine} onChange={e => setSkillsLine(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Languages (Comma Separated)</label>
-                <input type="text" className="form-input" placeholder="Indonesian, English, Japanese" value={languagesLine} onChange={e => setLanguagesLine(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Certifications (Comma Separated)</label>
-                <input type="text" className="form-input" placeholder="AWS Cloud Practitioner, Solana Bootcamp" value={certsLine} onChange={e => setCertsLine(e.target.value)} />
-              </div>
-            </div>
+            )}
 
-            {/* 3. Projects */}
-            <div className="builder-panel">
-              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>3. Projects</h3>
-              <ProjectList projects={projects} setter={setProjects} />
-            </div>
+            {/* Tab 3: Projects */}
+            {activeTab === 3 && (
+              <div>
+                <ProjectList projects={projects} setter={setProjects} />
+              </div>
+            )}
 
-            {/* 4. Contact */}
-            <div className="builder-panel" style={{ borderBottom: 'none' }}>
-              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>4. Contact & Connections</h3>
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input type="email" className="form-input" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+            {/* Tab 4: Contact */}
+            {activeTab === 4 && (
+              <div>
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input type="email" className="form-input" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Twitter / X Handle</label>
+                  <input type="text" className="form-input" placeholder="username (without @)" value={twitterHandle} onChange={e => setTwitterHandle(e.target.value.replace('@', ''))} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Personal Website</label>
+                  <input type="text" className="form-input" placeholder="https://..." value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score)</span></label>
+                  <input type="text" className="form-input" placeholder="5zi..." value={solAddress} onChange={e => setSolAddress(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">EVM Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Multichain Score)</span></label>
+                  <input type="text" className="form-input" placeholder="0x..." value={evmAddress} onChange={e => setEvmAddress(e.target.value)} />
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Twitter / X Handle</label>
-                <input type="text" className="form-input" placeholder="username (tanpa @)" value={twitterHandle} onChange={e => setTwitterHandle(e.target.value.replace('@', ''))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Personal Website / Portfolio</label>
-                <input type="text" className="form-input" placeholder="https://..." value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Solana Address (Optional – onchain score)</label>
-                <input type="text" className="form-input" placeholder="5zi..." value={solAddress} onChange={e => setSolAddress(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">EVM Address (Optional – multichain score)</label>
-                <input type="text" className="form-input" placeholder="0x..." value={evmAddress} onChange={e => setEvmAddress(e.target.value)} />
-              </div>
-            </div>
+            )}
 
+            {/* Tab navigation buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+              <button onClick={() => setActiveTab(t => Math.max(0, t - 1))}
+                className="btn btn-outline"
+                style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, opacity: activeTab === 0 ? 0.3 : 1, pointerEvents: activeTab === 0 ? 'none' : 'auto' }}>
+                ← PREV
+              </button>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'center', letterSpacing: '1px' }}>{activeTab + 1} / 5</span>
+              <button onClick={() => setActiveTab(t => Math.min(4, t + 1))}
+                className="btn btn-outline"
+                style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, opacity: activeTab === 4 ? 0.3 : 1, pointerEvents: activeTab === 4 ? 'none' : 'auto' }}>
+                NEXT →
+              </button>
+            </div>
 
           </div>
 
