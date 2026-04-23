@@ -14,7 +14,7 @@ const KNOWN_PROTOCOLS: Record<string, string> = {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const wallet = searchParams.get('wallet');
+  const wallet = searchParams.get('wallet')?.trim();
 
   if (!wallet) {
     return NextResponse.json({ error: 'Wallet address required' }, { status: 400 });
@@ -27,6 +27,107 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 });
   }
 
+  const heliusKey = process.env.HELIUS_API_KEY;
+
+  // ── HELIUS PATH: Rich enriched data ────────────────────────────────────────
+  if (heliusKey) {
+    try {
+      const baseUrl = `https://api.helius.xyz`;
+
+      // Run in parallel: balance, token accounts, enriched tx history
+      const [balanceRes, tokenRes, txRes] = await Promise.all([
+        // SOL Balance via Helius RPC
+        fetch(`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [wallet] }),
+          signal: AbortSignal.timeout(8000),
+        }).then(r => r.json()),
+
+        // Token holdings via Helius RPC
+        fetch(`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0', id: 1, method: 'getTokenAccountsByOwner',
+            params: [wallet, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }],
+          }),
+          signal: AbortSignal.timeout(8000),
+        }).then(r => r.json()),
+
+        // Enriched transaction history — Helius parses protocol interactions
+        fetch(`${baseUrl}/v0/addresses/${wallet}/transactions?api-key=${heliusKey}&limit=100`, {
+          signal: AbortSignal.timeout(12000),
+        }).then(r => r.ok ? r.json() : []).catch(() => []),
+      ]);
+
+      const solBalance = (balanceRes?.result?.value || 0) / LAMPORTS_PER_SOL;
+
+      // Count tokens with non-zero balance
+      const tokenCount = (tokenRes?.result?.value || []).filter((acc: any) => {
+        const amount = acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount;
+        return amount && amount > 0;
+      }).length;
+
+      // Parse enriched txs — extract protocols and stats
+      const txList: any[] = Array.isArray(txRes) ? txRes : [];
+      const totalTransactions = txList.length;
+
+      const protocolSet = new Set<string>();
+      let swapCount = 0;
+      let nftCount = 0;
+      let firstTxDate: string | null = null;
+      let walletAge = 'Unknown';
+
+      for (const tx of txList) {
+        if (tx.type === 'SWAP') swapCount++;
+        if (tx.type?.startsWith('NFT')) nftCount++;
+
+        // Detect protocols from account keys
+        for (const prog of (tx.accountData || [])) {
+          const name = KNOWN_PROTOCOLS[prog.account];
+          if (name) protocolSet.add(name);
+        }
+        // Also from top-level source field Helius provides
+        if (tx.source && tx.source !== 'SYSTEM_PROGRAM' && tx.source !== 'UNKNOWN') {
+          const niceName = tx.source.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());
+          protocolSet.add(niceName);
+        }
+      }
+
+      // Wallet age from oldest tx timestamp
+      if (txList.length > 0) {
+        const oldest = txList[txList.length - 1];
+        if (oldest.timestamp) {
+          const ms = oldest.timestamp * 1000;
+          firstTxDate = new Date(ms).toISOString();
+          const days = Math.floor((Date.now() - ms) / 86400000);
+          if (days < 30) walletAge = `${days} days`;
+          else if (days < 365) walletAge = `${Math.floor(days / 30)} months`;
+          else walletAge = `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m`;
+        }
+      }
+
+      return NextResponse.json({
+        wallet,
+        sol: parseFloat(solBalance.toFixed(4)),
+        totalTransactions,
+        walletAge,
+        firstTxDate,
+        tokenCount,
+        protocols: Array.from(protocolSet).slice(0, 10),
+        swapCount,
+        nftCount,
+        source: 'helius',
+      });
+
+    } catch (err) {
+      console.error('Helius fetch error, falling back to public RPC:', err);
+      // fall through to RPC fallback below
+    }
+  }
+
+  // ── FALLBACK PATH: Standard @solana/web3.js ─────────────────────────────────
   const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
   const connection = new Connection(rpcUrl, 'confirmed');
 
@@ -42,7 +143,6 @@ export async function GET(req: NextRequest) {
     const solBalance = balanceLamports / LAMPORTS_PER_SOL;
     const totalTransactions = signatures.length;
 
-    // Wallet age
     let walletAge = 'Unknown';
     let firstTxDate: string | null = null;
     if (signatures.length > 0) {
@@ -57,34 +157,22 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Filter meaningful SPL tokens (balance > 0)
-    const tokens = tokenAccounts.value
-      .filter((acc) => {
-        const amount = acc.account.data.parsed?.info?.tokenAmount?.uiAmount;
-        return amount && amount > 0;
-      })
-      .map((acc) => ({
-        mint: acc.account.data.parsed?.info?.mint,
-        amount: acc.account.data.parsed?.info?.tokenAmount?.uiAmount,
-        decimals: acc.account.data.parsed?.info?.tokenAmount?.decimals,
-      }))
-      .slice(0, 20);
-
-    // Detect protocol interactions from recent signatures
-    const recentSigs = signatures.slice(0, 50);
-    const protocolSet = new Set<string>();
-    // Simple heuristic: check known program IDs (would need parsed tx for full accuracy)
-    // For MVP just show top tx stats
+    const tokenCount = tokenAccounts.value.filter((acc) => {
+      const amount = acc.account.data.parsed?.info?.tokenAmount?.uiAmount;
+      return amount && amount > 0;
+    }).length;
 
     return NextResponse.json({
-      wallet: wallet,
+      wallet,
       sol: parseFloat(solBalance.toFixed(4)),
       totalTransactions,
       walletAge,
       firstTxDate,
-      tokenCount: tokens.length,
-      tokens: tokens.slice(0, 10),
-      protocols: Array.from(protocolSet),
+      tokenCount,
+      protocols: [],
+      swapCount: 0,
+      nftCount: 0,
+      source: 'rpc',
     });
   } catch (err) {
     console.error('Solana fetch error:', err);

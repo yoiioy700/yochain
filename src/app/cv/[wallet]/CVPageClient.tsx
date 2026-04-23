@@ -583,18 +583,9 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       if(decoded.theme) setCvTheme(decoded.theme);
       if(decoded.gh) fetch(`/api/github?username=${decoded.gh}`).then(r=>r.json()).then(setGhData).catch(console.error);
       if(decoded.sol) fetch(`/api/solana?wallet=${decoded.sol}`).then(r=>r.json()).then(setSolData).catch(console.error);
-      if(decoded.evm?.startsWith('0x')&&decoded.evm.length>=40){
-        const chains=[
-          {rpc:'https://ethereum.publicnode.com'},{rpc:'https://polygon-rpc.com'},
-          {rpc:'https://bsc-dataseed.binance.org'},{rpc:'https://arb1.arbitrum.io/rpc'},
-          {rpc:'https://mainnet.base.org'},{rpc:'https://mainnet.optimism.io'},
-          {rpc:'https://rpc.linea.build'},{rpc:'https://mainnet.era.zksync.io'},
-          {rpc:'https://api.avax.network/ext/bc/C/rpc'},
-        ];
-        const body=JSON.stringify({jsonrpc:'2.0',method:'eth_getTransactionCount',params:[decoded.evm,'latest'],id:1});
-        Promise.allSettled(chains.map(c=>fetch(c.rpc,{method:'POST',headers:{'Content-Type':'application/json'},body})
-          .then(r=>r.json()).then(d=>parseInt(d.result||'0x0',16)).catch(()=>0)))
-          .then(rs=>{const t=rs.reduce((s,r)=>s+(r.status==='fulfilled'?r.value:0),0);setEvmData({address:decoded.evm,txCount:t});});
+      // Now uses server-side /api/evm for proper multi-chain support + Covalent
+      if(decoded.evm?.startsWith('0x') && decoded.evm.length >= 40) {
+        fetch(`/api/evm?address=${decoded.evm}`).then(r=>r.json()).then(setEvmData).catch(console.error);
       }
     }catch(e){console.error(e);}
   },[]);
@@ -605,11 +596,15 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
   const c        = (dark:string,light:string) => isDark?dark:light;
   const projects = parseProjects(data.proj);
   const reputationScore = (
-    (solData?.totalTransactions||0)*0.05 +
-    (evmData?.txCount||0)*0.05 +
-    (ghData?.stats?.totalStars||0)*2 +
-    (ghData?.user?.publicRepos||0)*1 +
-    (data.tw?50:0)
+    (solData?.totalTransactions||0) * 0.04 +
+    (solData?.swapCount||0) * 5 +
+    (solData?.nftCount||0) * 3 +
+    (solData?.tokenCount||0) * 2 +
+    (evmData?.txCount||0) * 0.05 +
+    ((evmData?.chains?.length||0)) * 20 +
+    (ghData?.stats?.totalStars||0) * 2 +
+    (ghData?.user?.publicRepos||0) * 1 +
+    (data.tw ? 50 : 0)
   ).toFixed(0);
 
   const tmpl = data.tmpl || 'default';
@@ -791,12 +786,45 @@ function DefaultTemplate({data,ghData,solData,evmData,projects,parseList,reputat
               <div className="stat-box-val" style={{fontSize:'3.5rem',marginBottom:0,color:'var(--accent-orange)'}}>{reputationScore}</div>
               <div>
                 <div style={{color:c('#fff','#111'),fontWeight:700,fontSize:'1.1rem'}}>Total Web3 Score</div>
-                <div style={{color:'var(--text-muted)',fontSize:'0.8rem'}}>Solana TXs + EVM TXs + GitHub + Socials</div>
+                <div style={{color:'var(--text-muted)',fontSize:'0.8rem'}}>Solana + EVM Multichain + GitHub + Socials</div>
               </div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
-              {solData&&<div className="stat-box" style={{borderColor:'#9945FF'}}><span style={{fontSize:'0.75rem',color:'#9945FF',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em'}}>Solana</span><div className="stat-box-val" style={{color:'#9945FF',marginTop:'0.5rem'}}>{solData.totalTransactions>1000?`${(solData.totalTransactions/1000).toFixed(1)}k`:solData.totalTransactions}</div><div className="stat-box-lbl">Total Transactions</div></div>}
-              {evmData&&<div className="stat-box" style={{borderColor:'#627EEA'}}><span style={{fontSize:'0.75rem',color:'#627EEA',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em'}}>EVM Multichain</span><div className="stat-box-val" style={{color:'#627EEA',marginTop:'0.5rem'}}>{evmData.txCount>1000?`${(evmData.txCount/1000).toFixed(1)}k`:evmData.txCount}</div><div className="stat-box-lbl">TXs (ETH+BSC+ARB+Base+OP+More)</div></div>}
+              {solData && (
+                <div className="stat-box" style={{borderColor:'#9945FF'}}>
+                  <span style={{fontSize:'0.75rem',color:'#9945FF',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em'}}>Solana</span>
+                  <div className="stat-box-val" style={{color:'#9945FF',marginTop:'0.5rem'}}>
+                    {solData.totalTransactions > 1000 ? `${(solData.totalTransactions/1000).toFixed(1)}k` : solData.totalTransactions}
+                  </div>
+                  <div className="stat-box-lbl">
+                    {solData.swapCount > 0 ? `${solData.swapCount} Swaps · ` : ''}
+                    {solData.tokenCount > 0 ? `${solData.tokenCount} Tokens` : 'Transactions'}
+                  </div>
+                  {solData.protocols?.length > 0 && (
+                    <div style={{marginTop:'0.75rem',display:'flex',flexWrap:'wrap',gap:'0.3rem'}}>
+                      {solData.protocols.slice(0,5).map((p: string, i: number) => (
+                        <span key={i} style={{fontSize:'0.65rem',background:'rgba(153,69,255,0.15)',color:'#9945FF',padding:'0.15rem 0.5rem',borderRadius:'3px',fontWeight:600}}>{p}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {evmData && (
+                <div className="stat-box" style={{borderColor:'#627EEA'}}>
+                  <span style={{fontSize:'0.75rem',color:'#627EEA',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em'}}>EVM Multichain</span>
+                  <div className="stat-box-val" style={{color:'#627EEA',marginTop:'0.5rem'}}>
+                    {evmData.txCount > 1000 ? `${(evmData.txCount/1000).toFixed(1)}k` : evmData.txCount}
+                  </div>
+                  <div className="stat-box-lbl">{evmData.chains?.length || 0} Active Chains</div>
+                  {evmData.chains?.length > 0 && (
+                    <div style={{marginTop:'0.75rem',display:'flex',flexWrap:'wrap',gap:'0.3rem'}}>
+                      {evmData.chains.slice(0,6).map((ch: any, i: number) => (
+                        <span key={i} style={{fontSize:'0.65rem',background:`${ch.color}22`,color:ch.color,padding:'0.15rem 0.5rem',borderRadius:'3px',fontWeight:600,border:`1px solid ${ch.color}44`}}>{ch.chain}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               {ghData&&!ghData.error&&<div className="stat-box"><span style={{fontSize:'0.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em'}}>GitHub</span><div className="stat-box-val" style={{marginTop:'0.5rem'}}>{ghData.stats?.totalStars||0}</div><div className="stat-box-lbl">{ghData.user?.publicRepos||0} Repos · Stars</div></div>}
               {data.tw&&<div className="stat-box"><span style={{fontSize:'0.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em'}}>X / Twitter</span><div className="stat-box-val" style={{marginTop:'0.5rem'}}>+50</div><div className="stat-box-lbl">@{data.tw} · Identity Bonus</div></div>}
             </div>
