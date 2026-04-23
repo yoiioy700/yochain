@@ -23,21 +23,23 @@ function EntryList({ label, entries, setter, datePlaceholder, titlePlaceholder }
   const update = (i: number, field: keyof Entry, val: string) =>
     setter(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: val } : e));
   return (
-    <div className="form-group">
+    <div className="form-group" style={{ marginBottom: '2rem' }}>
       <label className="form-label">{label}</label>
       {entries.map((entry, i) => (
-        <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 36px', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'start' }}>
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 40px', gap: '1px', marginBottom: '1rem', alignItems: 'start', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
           <input type="text" className="form-input" placeholder={datePlaceholder} value={entry.date}
             onChange={e => update(i, 'date', e.target.value)}
-            style={{ fontSize: '0.8rem', padding: '0.6rem 0.75rem', height: '60px' }} />
+            style={{ fontSize: '0.85rem', padding: '0.75rem', height: '100%', border: 'none', borderBottom: 'none' }} />
           <textarea className="form-input" placeholder={titlePlaceholder} value={entry.title}
             onChange={e => update(i, 'title', e.target.value)}
-            style={{ fontSize: '0.8rem', padding: '0.6rem 0.75rem', minHeight: '60px', resize: 'none' }} />
+            style={{ fontSize: '0.85rem', padding: '0.75rem', minHeight: '60px', resize: 'none', border: 'none', borderBottom: 'none' }} />
           <button onClick={() => remove(i)}
-            style={{ background: '#2a2a2a', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', height: '60px' }}>✕</button>
+            style={{ background: '#0a0a0a', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem', height: '100%', transition: 'color 0.2s' }}
+            onMouseOver={e => e.currentTarget.style.color = '#fff'}
+            onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>✕</button>
         </div>
       ))}
-      <button onClick={add} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 1rem', marginTop: '0.25rem' }}>+ Add {label}</button>
+      <button onClick={add} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', marginTop: '0.5rem', borderRadius: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>+ Add {label}</button>
     </div>
   );
 }
@@ -51,28 +53,30 @@ function ProjectList({ projects, setter }: {
   const update = (i: number, field: keyof ProjectEntry, val: string) =>
     setter(prev => prev.map((p, idx) => idx === i ? { ...p, [field]: val } : p));
   return (
-    <div className="form-group">
+    <div className="form-group" style={{ marginBottom: '2rem' }}>
       <label className="form-label">Projects</label>
       {projects.map((p, i) => (
-        <div key={i} style={{ background: '#181818', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '0.75rem', marginBottom: '0.75rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <div key={i} style={{ background: 'transparent', borderLeft: '2px solid var(--accent-orange)', paddingLeft: '1.25rem', marginBottom: '1.5rem', position: 'relative' }}>
+          <button onClick={() => remove(i)}
+            style={{ position: 'absolute', top: 0, right: 0, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem' }}>✕</button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', marginBottom: '1px', background: 'var(--border-color)' }}>
             <input className="form-input" placeholder="Project Name" value={p.name}
-              onChange={e => update(i, 'name', e.target.value)} style={{ fontSize: '0.8rem', padding: '0.55rem 0.75rem' }} />
+              onChange={e => update(i, 'name', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
             <input className="form-input" placeholder="https://github.com/..." value={p.url}
-              onChange={e => update(i, 'url', e.target.value)} style={{ fontSize: '0.8rem', padding: '0.55rem 0.75rem' }} />
+              onChange={e => update(i, 'url', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
           </div>
-          <textarea className="form-input" placeholder="Short description..." value={p.desc}
-            onChange={e => update(i, 'desc', e.target.value)}
-            style={{ fontSize: '0.8rem', padding: '0.55rem 0.75rem', minHeight: '55px', resize: 'none', marginBottom: '0.5rem' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
+          <div style={{ background: 'var(--border-color)', paddingBottom: '1px', marginBottom: '1px' }}>
+            <textarea className="form-input" placeholder="Short description..." value={p.desc}
+              onChange={e => update(i, 'desc', e.target.value)}
+              style={{ minHeight: '80px', resize: 'none', border: 'none', borderBottom: 'none' }} />
+          </div>
+          <div style={{ background: 'var(--border-color)' }}>
             <input className="form-input" placeholder="Tech stack (e.g. Next.js, Solana)" value={p.tech}
-              onChange={e => update(i, 'tech', e.target.value)} style={{ fontSize: '0.8rem', padding: '0.55rem 0.75rem', flex: 1 }} />
-            <button onClick={() => remove(i)}
-              style={{ background: '#2a2a2a', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', color: 'var(--text-muted)', cursor: 'pointer', padding: '0 0.75rem' }}>✕</button>
+              onChange={e => update(i, 'tech', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
           </div>
         </div>
       ))}
-      <button onClick={add} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 1rem', marginTop: '0.25rem' }}>+ Add Project</button>
+      <button onClick={add} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', marginTop: '0.5rem', borderRadius: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>+ Add Project</button>
     </div>
   );
 }
@@ -162,23 +166,23 @@ export default function BuilderPage() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
 
             {/* 0. Template */}
-            <div className="form-card">
-              <h3 style={{ marginBottom: '1rem', color: 'var(--accent-orange)' }}>0. Template</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <div className="builder-panel">
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>0. Template</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
                 {[
-                  { id: 'default', label: '🌑 Default', desc: 'Dark magazine' },
-                  { id: 'cyber',   label: '🟢 Cyber',   desc: 'Neon green + dark' },
-                  { id: 'minimal', label: '⬜ Minimal',  desc: 'Clean white + BW' },
-                  { id: 'modern',  label: '🔴 Modern',   desc: 'Red accent + bold' },
+                  { id: 'default', label: 'DEFAULT', desc: 'Dark magazine' },
+                  { id: 'cyber',   label: 'CYBER',   desc: 'Neon green + dark' },
+                  { id: 'minimal', label: 'MINIMAL',  desc: 'Clean white + BW' },
+                  { id: 'modern',  label: 'MODERN',   desc: 'Red accent + bold' },
                 ].map(t => (
                   <div key={t.id}
                     onClick={() => setTemplate(t.id)}
-                    style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius)', cursor: 'pointer',
-                      background: template === t.id ? 'rgba(244,106,42,0.12)' : '#181818',
-                      border: `1px solid ${template === t.id ? 'var(--accent-orange)' : 'var(--border-color)'}`,
+                    style={{ padding: '1rem', cursor: 'pointer',
+                      background: template === t.id ? '#0f0f0f' : '#0a0a0a',
+                      borderBottom: template === t.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
                       transition: 'all 0.2s' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: template === t.id ? 'var(--accent-orange)' : '#fff' }}>{t.label}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{t.desc}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '1px', color: template === t.id ? 'var(--accent-orange)' : '#888' }}>{t.label}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', textTransform: 'uppercase' }}>{t.desc}</div>
                   </div>
                 ))}
               </div>
@@ -187,16 +191,16 @@ export default function BuilderPage() {
 
             {/* 1. Profile */}
             <div className="builder-panel">
-              <h3 style={{ marginBottom: '1rem', color: 'var(--accent-orange)' }}>1. Profile</h3>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>1. Profile</h3>
               
               {/* Available toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', padding: '0.75rem 1rem', background: available ? 'rgba(244,106,42,0.08)' : '#181818', border: `1px solid ${available ? 'var(--accent-orange)' : 'var(--border-color)'}`, borderRadius: 'var(--radius)', cursor: 'pointer' }}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: '#0a0a0a', border: '1px solid var(--border-color)', borderLeft: available ? '4px solid var(--accent-orange)' : '4px solid #333', cursor: 'pointer', transition: 'all 0.2s' }}
                 onClick={() => setAvailable(v => !v)}>
-                <div style={{ width: '36px', height: '20px', borderRadius: '100px', background: available ? 'var(--accent-orange)' : '#444', position: 'relative', transition: 'background 0.2s' }}>
-                  <div style={{ width: '16px', height: '16px', background: '#fff', borderRadius: '50%', position: 'absolute', top: '2px', left: available ? '18px' : '2px', transition: 'left 0.2s' }} />
+                <div style={{ width: '40px', height: '22px', background: available ? 'var(--accent-orange)' : '#222', position: 'relative', transition: 'background 0.2s' }}>
+                  <div style={{ width: '14px', height: '14px', background: '#fff', position: 'absolute', top: '4px', left: available ? '22px' : '4px', transition: 'left 0.2s' }} />
                 </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: available ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
-                  {available ? '⚡ Available for Work / Hire' : 'Not Available for Work'}
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: available ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                  {available ? 'Available for Work' : 'Not Available'}
                 </span>
               </div>
 
@@ -227,7 +231,7 @@ export default function BuilderPage() {
 
             {/* 2. Background */}
             <div className="builder-panel">
-              <h3 style={{ marginBottom: '1rem', color: 'var(--accent-orange)' }}>2. Background</h3>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>2. Background</h3>
               <EntryList label="Education" entries={education} setter={setEducation}
                 datePlaceholder="2020–2024" titlePlaceholder="Institut Teknologi Bandung" />
               <div style={{ marginTop: '1.25rem' }}>
@@ -250,13 +254,13 @@ export default function BuilderPage() {
 
             {/* 3. Projects */}
             <div className="builder-panel">
-              <h3 style={{ marginBottom: '1rem', color: 'var(--accent-orange)' }}>3. Projects</h3>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>3. Projects</h3>
               <ProjectList projects={projects} setter={setProjects} />
             </div>
 
             {/* 4. Contact */}
-            <div className="builder-panel">
-              <h3 style={{ marginBottom: '1rem', color: 'var(--accent-orange)' }}>4. Contact & Connections</h3>
+            <div className="builder-panel" style={{ borderBottom: 'none' }}>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>4. Contact & Connections</h3>
               <div className="form-group">
                 <label className="form-label">Email</label>
                 <input type="email" className="form-input" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
@@ -279,25 +283,24 @@ export default function BuilderPage() {
               </div>
             </div>
 
-            {/* 5. Publish */}
-            <div className="builder-panel" style={{ background: 'rgba(244, 106, 42, 0.05)', borderColor: 'var(--accent-orange)' }}>
-              <h3 style={{ marginBottom: '1rem', color: 'var(--accent-orange)' }}>5. Publish</h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                Data di-encode ke URL — share langsung tanpa database. Ini adalah YoChain profile lo.
-              </p>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button className="btn btn-primary" onClick={copyLink} style={{ flex: 1 }}>
-                  {copied ? 'Link Copied!' : 'Copy Share Link'}
-                </button>
-                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" className="btn btn-outline" style={{ background: 'var(--bg-dark)' }}>
-                  View Full CV →
-                </Link>
-              </div>
-            </div>
+
           </div>
 
           {/* ── Right: Live Preview ── */}
           <div style={{ position: 'sticky', top: '76px' }}>
+            {/* Publish Section (Moved here to be always accessible) */}
+            <div className="builder-panel" style={{ background: 'rgba(244, 106, 42, 0.05)', borderColor: 'var(--accent-orange)', marginBottom: '1rem', padding: '1rem' }}>
+              <h3 style={{ marginBottom: '0.5rem', color: 'var(--accent-orange)', fontSize: '1.1rem' }}>Share Your Profile</h3>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn btn-primary" onClick={copyLink} style={{ flex: 1, padding: '0.5rem' }}>
+                  {copied ? 'Link Copied!' : 'Copy Share Link'}
+                </button>
+                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" className="btn btn-outline" style={{ background: 'var(--bg-dark)', padding: '0.5rem 1rem' }}>
+                  View Full CV →
+                </Link>
+              </div>
+            </div>
+
             <p className="form-label" style={{ marginBottom: '0.75rem' }}>Live Preview</p>
 
             {template === 'cyber' ? (
@@ -337,25 +340,73 @@ export default function BuilderPage() {
                 </div>
               </div>
             ) : template === 'modern' ? (
-              <div style={{ background: '#fafafa', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e8e8e8', zoom: 0.65 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', background: '#fff', borderBottom: '2px solid #f0f0f0', position: 'relative' }}>
-                  <div style={{ padding: '1.25rem 1rem 1.25rem 1.75rem', borderLeft: '6px solid #e63329' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.1rem' }}>Hello... I'm</div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#e63329', lineHeight: 1, letterSpacing: '-0.5px', marginBottom: '0.1rem' }}>{name||'Your Name'}</div>
-                    <div style={{ fontSize: '0.62rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.6rem' }}>{role||'Role'}</div>
-                    {bio && <p style={{ fontSize: '0.65rem', color: '#666', lineHeight: 1.5, marginBottom: '0.5rem' }}>{bio.slice(0,80)}</p>}
-                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.58rem', color: '#777' }}>{email && <span>📧 {email}</span>}{twitterHandle && <span>𝕏 @{twitterHandle}</span>}</div>
-                    {available && <div style={{ marginTop: '0.4rem', display: 'inline-block', background: '#e63329', color: '#fff', padding: '0.15rem 0.5rem', borderRadius: '3px', fontSize: '0.55rem', fontWeight: 700 }}>⚡ AVAILABLE</div>}
+              <div style={{ background: '#fafafa', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e8e8e8', zoom: 0.65, position: 'relative' }}>
+                {/* Diagonal stripes background pattern */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.03, pointerEvents: 'none', background: 'repeating-linear-gradient(45deg, #000, #000 2px, transparent 2px, transparent 10px)' }} />
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px', background: '#fff', borderBottom: '3px solid #e63329', position: 'relative', zIndex: 1 }}>
+                  <div style={{ padding: '1.5rem 1rem 1.5rem 2rem', borderLeft: '8px solid #e63329' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.2rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px' }}>Profile</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#111', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '0.2rem' }}>{name||'Your Name'}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#e63329', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>{role||'Role'}</div>
+                    {bio && <p style={{ fontSize: '0.7rem', color: '#555', lineHeight: 1.6, marginBottom: '0.8rem' }}>{bio.slice(0,100)}</p>}
+                    <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', fontSize: '0.65rem', color: '#666', fontWeight: 500 }}>
+                      {email && <span style={{ background: '#f5f5f5', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>📧 {email}</span>}
+                      {twitterHandle && <span style={{ background: '#f5f5f5', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>𝕏 @{twitterHandle}</span>}
+                    </div>
+                    {available && <div style={{ marginTop: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#e63329', color: '#fff', padding: '0.25rem 0.6rem', borderRadius: '4px', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff' }} /> Available for Hire</div>}
                   </div>
                   <div style={{ position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: 0, right: 0, width: '20px', height: '20px', background: '#e63329' }} />
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} /> : <div style={{ width: '100%', height: '140px', background: '#e0e0e0' }} />}
+                    <div style={{ position: 'absolute', top: 0, right: 0, width: '40px', height: '40px', background: '#e63329', clipPath: 'polygon(0 0, 100% 0, 100% 100%)', zIndex: 2 }} />
+                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block', filter: 'contrast(1.1)' }} /> : <div style={{ width: '100%', height: '100%', background: '#eee' }} />}
                   </div>
                 </div>
-                <div style={{ padding: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem' }}>
-                  <div><div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#111', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><span style={{ width: '8px', height: '2px', background: '#e63329', display: 'inline-block' }}/>Experience</div>{experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ borderLeft: '2px solid #e63329', paddingLeft: '0.35rem', marginBottom: '0.3rem' }}><div style={{ fontSize: '0.48rem', color: '#e63329', fontWeight: 700 }}>{e.date}</div><div style={{ fontSize: '0.55rem', fontWeight: 700 }}>{e.title}</div></div>)}</div>
-                  <div><div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#111', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><span style={{ width: '8px', height: '2px', background: '#e63329', display: 'inline-block' }}/>Skills</div>{parseList(skillsLine).map((s,i) => <div key={i} style={{ marginBottom: '0.3rem' }}><div style={{ fontSize: '0.55rem', color: '#333' }}>{s}</div><div style={{ color: '#e63329', fontSize: '0.62rem' }}>{'★'.repeat(5-i%2)+' ☆'.repeat(i%2)}</div></div>)}</div>
-                  <div><div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#111', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><span style={{ width: '8px', height: '2px', background: '#e63329', display: 'inline-block' }}/>Education</div>{education.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.3rem' }}><div style={{ fontSize: '0.48rem', color: '#e63329', fontWeight: 700 }}>{e.date}</div><div style={{ fontSize: '0.55rem', fontWeight: 700 }}>{e.title}</div></div>)}</div>
+                
+                <div style={{ padding: '1.25rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
+                  
+                  {/* Experience Cards */}
+                  <div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#111', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}><span style={{ width: '12px', height: '3px', background: '#e63329', display: 'inline-block' }}/>Experience</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {experience.filter(e=>e.title).map((e,i) => (
+                        <div key={i} style={{ background: '#fff', border: '1px solid #eee', borderRadius: '6px', padding: '0.6rem 0.8rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                          <div style={{ fontSize: '0.55rem', color: '#fff', background: '#111', display: 'inline-block', padding: '0.15rem 0.4rem', borderRadius: '3px', fontWeight: 700, marginBottom: '0.3rem' }}>{e.date}</div>
+                          <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#222' }}>{e.title}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Star-rated Skills & Education */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#111', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}><span style={{ width: '12px', height: '3px', background: '#e63329', display: 'inline-block' }}/>Skills</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        {parseList(skillsLine).map((s,i) => {
+                          const stars = 5 - (i % 3);
+                          return (
+                            <div key={i} style={{ background: '#fff', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '0.6rem', color: '#111', fontWeight: 700 }}>{s}</div>
+                              <div style={{ color: '#e63329', fontSize: '0.5rem', letterSpacing: '1px' }}>
+                                {'★'.repeat(stars)}{'☆'.repeat(5-stars)}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#111', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}><span style={{ width: '12px', height: '3px', background: '#e63329', display: 'inline-block' }}/>Education</div>
+                      {education.filter(e=>e.title).map((e,i) => (
+                        <div key={i} style={{ marginBottom: '0.4rem', position: 'relative', paddingLeft: '0.6rem', borderLeft: '2px solid #ddd' }}>
+                          <div style={{ fontSize: '0.5rem', color: '#e63329', fontWeight: 800 }}>{e.date}</div>
+                          <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#333' }}>{e.title}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
                 </div>
               </div>
             ) : (

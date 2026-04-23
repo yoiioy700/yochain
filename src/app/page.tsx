@@ -27,18 +27,18 @@ export default function LandingPage() {
           <section className="hero" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '6rem 0' }}>
             <div className="animate-fade-up">
               <p className="hero-eyebrow">Web3 Developer Identity</p>
-              <h1 className="hero-title display" style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}>
+              <h1 className="hero-title display" style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', lineHeight: '1.2', marginBottom: '1.5rem' }}>
                 Your onchain story,<br />
                 <em style={{ color: 'var(--accent-orange)' }}>proven on every chain.</em>
               </h1>
-              <p className="hero-desc" style={{ maxWidth: '600px', margin: '0 auto 3rem' }}>
+              <p className="hero-desc" style={{ maxWidth: '600px', margin: '0 auto 2.5rem', lineHeight: '1.6', fontSize: '1.1rem', color: 'var(--text-muted)' }}>
                 Login with GitHub. <strong>YoChain</strong> automatically generates a
                 stunning developer profile powered by your real activity across
                 Solana, EVM (ETH/Polygon/Base/OP/BSC), and GitHub.
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', margin: '0 auto', alignItems: 'center' }}>
-                <div style={{ padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', minWidth: '320px', gap: '1.5rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', minWidth: '320px', gap: '1.5rem', alignItems: 'center', marginTop: '1rem' }}>
                   <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>Login to Start Building</div>
                   {session?.user ? (
                     <div style={{ background: '#2a2a2a', padding: '0.8rem 1.5rem', borderRadius: '100px', color: 'var(--accent-orange)' }}>

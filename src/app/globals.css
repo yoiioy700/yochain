@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg-dark: #121212;
-  --bg-card: #1e1e1e;
+  --bg-dark: #040404;
+  --bg-card: #0a0a0a;
   --text-main: #e0e0e0;
   --text-muted: #888888;
-  --accent-orange: #f46a2a;
+  --accent-orange: #FF4400;
   --border-color: #333333;
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --radius-lg: 16px;
-  --radius: 8px;
+  --radius-lg: 0px;
+  --radius: 0px;
 }
 
 /* ── Light Theme Override ── */
@@ -180,28 +180,34 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
 
 /* Builder Form Styles */
 .builder-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  padding: 0 0 2rem 0;
+  margin-bottom: 2rem;
 }
 
-.form-group { margin-bottom: 1rem; }
-.form-label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.form-group { margin-bottom: 1.5rem; }
+.form-label { display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-dark);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  background: #0a0a0a;
+  border: 1px solid transparent;
+  border-bottom: 2px solid var(--border-color);
+  border-radius: 0;
   color: var(--text-main);
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  transition: border-color 0.2s;
+  font-size: 1rem;
+  transition: all 0.2s ease;
 }
-.form-input:focus { border-color: var(--accent-orange); outline: none; }
-textarea.form-input { min-height: 100px; resize: vertical; }
+.form-input:focus { 
+  border-bottom-color: var(--accent-orange); 
+  background: #0f0f0f;
+  outline: none; 
+}
+textarea.form-input { min-height: 120px; resize: vertical; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
