@@ -169,11 +169,11 @@ export default function BuilderPage() {
             {/* Tab Navigation */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
               {[
-                { id: 0, label: 'TEMPLATE' },
-                { id: 1, label: 'PROFILE' },
-                { id: 2, label: 'BACKGROUND' },
-                { id: 3, label: 'PROJECTS' },
-                { id: 4, label: 'CONTACT' },
+                { id: 0, label: 'PROFILE' },
+                { id: 1, label: 'BACKGROUND' },
+                { id: 2, label: 'PROJECTS' },
+                { id: 3, label: 'CONTACT' },
+                { id: 4, label: 'TEMPLATE' },
               ].map(tab => (
                 <div key={tab.id} onClick={() => setActiveTab(tab.id)}
                   style={{ padding: '0.75rem 0.5rem', cursor: 'pointer', textAlign: 'center',
@@ -185,8 +185,8 @@ export default function BuilderPage() {
               ))}
             </div>
 
-            {/* Tab 0: Template */}
-            {activeTab === 0 && (
+            {/* Tab 4: Template */}
+            {activeTab === 4 && (
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
                   {[
@@ -197,6 +197,7 @@ export default function BuilderPage() {
                     { id: 'brutalist', label: 'BRUTALIST', desc: 'Neo-brutalism + yellow' },
                     { id: 'glass',   label: 'GLASS',    desc: 'DeFi ethereal glow' },
                     { id: 'paper',   label: 'PAPER',    desc: 'Scholar serif + textured' },
+                    { id: 'solana',  label: 'SOLANA',   desc: 'Premium Web3 Glass' },
                   ].map(t => (
                     <div key={t.id} onClick={() => setTemplate(t.id)}
                       style={{ padding: '1.25rem 1rem', cursor: 'pointer',
@@ -211,8 +212,8 @@ export default function BuilderPage() {
               </div>
             )}
 
-            {/* Tab 1: Profile */}
-            {activeTab === 1 && (
+            {/* Tab 0: Profile */}
+            {activeTab === 0 && (
               <div>
                 {/* Available toggle */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: '#0a0a0a', border: '1px solid var(--border-color)', borderLeft: available ? '4px solid var(--accent-orange)' : '4px solid #333', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -225,8 +226,31 @@ export default function BuilderPage() {
                   </span>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Photo URL</label>
-                  <input type="text" className="form-input" placeholder="https://avatars.githubusercontent.com/..." value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} />
+                  <label className="form-label">Photo (URL or Upload)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input type="text" className="form-input" style={{ flex: 1 }} placeholder="https://..." value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} />
+                    <label className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0 1rem', fontSize: '0.8rem', flexShrink: 0 }}>
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const label = e.target.parentElement;
+                        if(label) label.style.opacity = '0.5';
+                        try {
+                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                          const data = await res.json();
+                          if (data.url) setPhotoUrl(data.url);
+                          else alert('Upload failed');
+                        } catch (err) {
+                          alert('Upload failed');
+                        } finally {
+                          if(label) label.style.opacity = '1';
+                        }
+                      }} />
+                      Upload
+                    </label>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Full Name</label>
@@ -247,8 +271,8 @@ export default function BuilderPage() {
               </div>
             )}
 
-            {/* Tab 2: Background */}
-            {activeTab === 2 && (
+            {/* Tab 1: Background */}
+            {activeTab === 1 && (
               <div>
                 <EntryList label="Education" entries={education} setter={setEducation}
                   datePlaceholder="2020–2024" titlePlaceholder="Institut Teknologi Bandung" />
@@ -269,15 +293,15 @@ export default function BuilderPage() {
               </div>
             )}
 
-            {/* Tab 3: Projects */}
-            {activeTab === 3 && (
+            {/* Tab 2: Projects */}
+            {activeTab === 2 && (
               <div>
                 <ProjectList projects={projects} setter={setProjects} />
               </div>
             )}
 
-            {/* Tab 4: Contact */}
-            {activeTab === 4 && (
+            {/* Tab 3: Contact */}
+            {activeTab === 3 && (
               <div>
                 <div className="form-group">
                   <label className="form-label">Email</label>
@@ -472,22 +496,23 @@ export default function BuilderPage() {
                 </div>
               </div>
             ) : template === 'glass' ? (
-              <div style={{ background: '#040509', borderRadius: '16px', overflow: 'hidden', zoom: 0.65, padding: '1.5rem', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '100%', height: '100%', background: 'radial-gradient(circle at top left, rgba(62,43,158,0.4), transparent 60%), radial-gradient(circle at bottom right, rgba(32,95,175,0.4), transparent 60%)', filter: 'blur(30px)', zIndex: 0 }} />
-                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '1.5rem', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%', border: '1px solid rgba(162,178,232,0.3)', marginBottom: '1rem', display: 'inline-block' }} /> : <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(162,178,232,0.1)', marginBottom: '1rem', display: 'inline-block' }} />}
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginBottom: '0.2rem' }}>{name||'Your Name'}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#8497ce' }}>{role||'Role'}</div>
+              <div style={{ background: '#020205', overflow: 'hidden', zoom: 0.65, padding: '1.5rem', position: 'relative', border: '1px solid #222' }}>
+                <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '100%', height: '100%', background: 'radial-gradient(ellipse at top left, rgba(153,69,255,0.4) 0%, transparent 60%)', filter: 'blur(30px)', zIndex: 0 }} />
+                <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '100%', height: '100%', background: 'radial-gradient(ellipse at bottom right, rgba(30,136,229,0.3) 0%, transparent 60%)', filter: 'blur(30px)', zIndex: 0 }} />
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'center' }}>
+                  <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '50%', marginBottom: '0.5rem', display: 'inline-block', filter: 'grayscale(20%)' }} /> : <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', marginBottom: '0.5rem', display: 'inline-block' }} />}
+                    <div style={{ fontSize: '1.5rem', fontWeight: 400, color: '#fff', marginBottom: '0.2rem', fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic' }}>{name||'Your Name'}</div>
+                    <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>{role||'Role'}</div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.25rem', backdropFilter: 'blur(10px)' }}>
-                      <div style={{ fontSize: '0.65rem', color: '#a2b2e8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.8rem', borderBottom: '1px solid rgba(162,178,232,0.2)', paddingBottom: '0.3rem' }}>Experience</div>
-                      {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.5rem', borderLeft: '1px solid rgba(162,178,232,0.3)', paddingLeft: '0.5rem' }}><div style={{ fontSize: '0.55rem', color: '#8497ce' }}>{e.date}</div><div style={{ fontSize: '0.75rem', color: '#e4eaf5' }}>{e.title}</div></div>)}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', textAlign: 'left' }}>
+                    <div>
+                      <div style={{ fontSize: '0.8rem', color: '#fff', marginBottom: '0.5rem', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>Experience</div>
+                      {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.5rem' }}><div style={{ fontSize: '0.6rem', color: '#fff' }}>{e.title}</div><div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{e.date}</div></div>)}
                     </div>
-                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.25rem', backdropFilter: 'blur(10px)' }}>
-                      <div style={{ fontSize: '0.65rem', color: '#a2b2e8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.8rem', borderBottom: '1px solid rgba(162,178,232,0.2)', paddingBottom: '0.3rem' }}>Skills</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <span key={i} style={{ background: 'rgba(162,178,232,0.1)', color: '#c4d0eb', fontSize: '0.6rem', padding: '0.2rem 0.5rem', borderRadius: '100px' }}>{s}</span>)}</div>
+                    <div>
+                      <div style={{ fontSize: '0.8rem', color: '#fff', marginBottom: '0.5rem', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>Capabilities</div>
+                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>{parseList(skillsLine).join(', ')}</div>
                     </div>
                   </div>
                 </div>
@@ -508,6 +533,30 @@ export default function BuilderPage() {
                     <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#800000', textTransform: 'uppercase', borderBottom: '1px solid #ccc', paddingBottom: '0.3rem', marginBottom: '0.8rem' }}>Education</div>
                     {education.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem' }}><div style={{ fontSize: '0.85rem' }}>{e.title}</div><div style={{ fontSize: '0.65rem', fontStyle: 'italic', color: '#666' }}>{e.date}</div></div>)}
                   </div>
+                </div>
+              </div>
+            ) : template === 'solana' ? (
+              <div style={{ background: '#000', border: '2px solid #222', overflow: 'hidden', zoom: 0.65, padding: '0', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '12px', height: '12px', borderRight: '2px solid #14F195', borderBottom: '2px solid #14F195' }} />
+                <div style={{ padding: '2rem 1.5rem', borderBottom: '2px solid #222' }}>
+                  <div style={{ fontSize: '0.6rem', color: '#9945FF', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '0.5rem' }}>High-Performance Node</div>
+                  <div style={{ fontSize: '3.5rem', fontWeight: 900, lineHeight: 0.85, letterSpacing: '-0.05em', color: '#14F195', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{name||'NATIVE'}</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '1rem' }}>{role||'WEB3 DEVELOPER'}</div>
+                  {photoUrl && <img src={photoUrl} alt="p" style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #14F195', filter: 'grayscale(100%) contrast(1.2)', display: 'block' }} />}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+                  <div style={{ borderRight: '2px solid #222', padding: '1.5rem', borderBottom: '2px solid #222' }}>
+                    <div style={{ background: '#9945FF', color: '#000', padding: '0.2rem 0.5rem', display: 'inline-block', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem' }}>EXPERIENCE_LOG</div>
+                    {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem', borderLeft: '2px solid #333', paddingLeft: '0.8rem', position: 'relative' }}><div style={{ position: 'absolute', top: '4px', left: '-5px', width: '8px', height: '8px', background: '#000', border: '2px solid #9945FF' }}/><div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 800 }}>{e.title}</div><div style={{ fontSize: '0.55rem', color: '#14F195', fontWeight: 700 }}>{e.date}</div></div>)}
+                  </div>
+                  <div style={{ padding: '1.5rem', borderBottom: '2px solid #222' }}>
+                    <div style={{ background: '#14F195', color: '#000', padding: '0.2rem 0.5rem', display: 'inline-block', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem' }}>CAPABILITIES</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <span key={i} style={{ border: '1px solid #14F195', color: '#14F195', fontSize: '0.55rem', padding: '0.2rem 0.4rem', fontWeight: 800 }}>{s}</span>)}</div>
+                  </div>
+                </div>
+                <div style={{ background: '#14F195', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#000', textTransform: 'uppercase' }}>ONCHAIN<br/>SCORE</div>
+                  <div style={{ fontSize: '4rem', fontWeight: 900, color: '#000', lineHeight: 0.8, letterSpacing: '-0.05em' }}>100</div>
                 </div>
               </div>
             ) : (

@@ -11,6 +11,11 @@ import { generateSigner } from '@metaplex-foundation/umi';
 
 function shortAddr(a: string) { return a ? `${a.slice(0,6)}...${a.slice(-6)}` : ''; }
 
+const MailIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>;
+const GhIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>;
+const WebIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
+
 interface ProjectEntry { name: string; desc: string; url: string; tech: string; }
 interface CVData {
   p:string; n:string; r:string; b:string; e:string;
@@ -64,7 +69,7 @@ function CyberTemplate({data, ghData, parseList, projects, reputationScore}: Tmp
           <div>
             <CyberSHead label="CONTACT"/>
             {data.e && <div style={{fontSize:'0.67rem',color:'#7ab87a',marginBottom:'0.35rem',wordBreak:'break-all'}}>@ {data.e}</div>}
-            {data.tw && <div style={{fontSize:'0.67rem',color:'#7ab87a',marginBottom:'0.35rem'}}>x @{data.tw}</div>}
+            {data.tw && <div style={{fontSize:'0.67rem',color:'#7ab87a',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><XIcon/> @{data.tw}</div>}
             {data.gh && <div style={{fontSize:'0.67rem',color:'#7ab87a',marginBottom:'0.35rem'}}>/ github/{data.gh}</div>}
             {data.web && <div style={{fontSize:'0.67rem',color:'#7ab87a',wordBreak:'break-all'}}>~ {data.web.replace(/https?:\/\//,'')}</div>}
           </div>
@@ -116,7 +121,7 @@ function MinimalTemplate({data, ghData, parseList, projects, reputationScore}: T
       <div style={{display:'grid',gridTemplateColumns:'270px 1fr',minHeight:'580px'}}>
         <div style={{background:'#f4f4f4',borderRight:'1px solid #e8e8e8',padding:'2rem 1.75rem',display:'flex',flexDirection:'column',gap:'1.75rem'}}>
           {data.b && <p style={{fontSize:'0.8rem',color:'#555',lineHeight:1.8,margin:0}}>{data.b}</p>}
-          <div><MinimalSH label="Contact"/>{data.e&&<div style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem'}}>{data.e}</div>}{data.tw&&<div style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem'}}>x @{data.tw}</div>}{data.gh&&<div style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem'}}>github/{data.gh}</div>}{data.web&&<div style={{fontSize:'0.73rem',color:'#555',wordBreak:'break-all'}}>{data.web.replace(/https?:\/\//,'')}</div>}</div>
+          <div><MinimalSH label="Contact"/>{data.e&&<div style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><MailIcon/> {data.e}</div>}{data.tw&&<div style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><XIcon/> @{data.tw}</div>}{data.gh&&<div style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><GhIcon/> {data.gh}</div>}{data.web&&<div style={{fontSize:'0.73rem',color:'#555',wordBreak:'break-all',display:'flex',alignItems:'center',gap:'0.4rem'}}><WebIcon/> {data.web.replace(/https?:\/\//,'')}</div>}</div>
           {sklList.length>0 && <div><MinimalSH label="Skills"/><div style={{display:'flex',flexWrap:'wrap',gap:'0.4rem'}}>{sklList.map((s,i)=><span key={i} style={{fontSize:'0.7rem',background:'#fff',border:'1px solid #ddd',color:'#333',padding:'0.3rem 0.65rem',fontWeight:500}}>{s}</span>)}</div></div>}
           {langList.length>0 && <div><MinimalSH label="Languages"/><div style={{display:'flex',flexWrap:'wrap',gap:'0.4rem'}}>{langList.map((l,i)=><span key={i} style={{fontSize:'0.7rem',background:'#fff',border:'1px solid #ddd',color:'#333',padding:'0.3rem 0.65rem',fontWeight:500}}>{l}</span>)}</div></div>}
           {certList.length>0 && <div><MinimalSH label="Certifications"/>{certList.map((c,i)=><div key={i} style={{fontSize:'0.73rem',color:'#555',marginBottom:'0.35rem'}}>— {c}</div>)}</div>}
@@ -163,7 +168,7 @@ function ModernTemplate({data, ghData, parseList, projects, reputationScore}: Tm
           {data.avail==='1' && <div style={{marginTop:'0.75rem',display:'inline-flex',alignItems:'center',gap:'0.4rem',background:`${AMBER}18`,border:`1px solid ${AMBER}55`,color:AMBER,padding:'0.25rem 0.85rem',fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.1em'}}>◉ AVAILABLE</div>}
         </div>
         {data.b && <p style={{fontSize:'0.77rem',color:'#7a8898',lineHeight:1.8,margin:0,borderLeft:`2px solid ${AMBER}33`,paddingLeft:'0.85rem'}}>{data.b}</p>}
-        <div><ModernSH label="Contact"/>{data.e&&<div style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem'}}>{data.e}</div>}{data.tw&&<div style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem'}}>x @{data.tw}</div>}{data.gh&&<div style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem'}}>gh/{data.gh}</div>}{data.web&&<div style={{fontSize:'0.72rem',color:'#8898aa',wordBreak:'break-all'}}>{data.web.replace(/https?:\/\//,'')}</div>}</div>
+        <div><ModernSH label="Contact"/>{data.e&&<div style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><MailIcon/> {data.e}</div>}{data.tw&&<div style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><XIcon/> @{data.tw}</div>}{data.gh&&<div style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><GhIcon/> {data.gh}</div>}{data.web&&<div style={{fontSize:'0.72rem',color:'#8898aa',wordBreak:'break-all',display:'flex',alignItems:'center',gap:'0.4rem'}}><WebIcon/> {data.web.replace(/https?:\/\//,'')}</div>}</div>
         {langList.length>0 && <div><ModernSH label="Languages"/><div style={{display:'flex',flexWrap:'wrap',gap:'0.4rem'}}>{langList.map((l,i)=><span key={i} style={{fontSize:'0.7rem',background:`${AMBER}18`,border:`1px solid ${AMBER}33`,color:AMBER,padding:'0.25rem 0.65rem'}}>{l}</span>)}</div></div>}
         {certList.length>0 && <div><ModernSH label="Certifications"/>{certList.map((c,i)=><div key={i} style={{fontSize:'0.72rem',color:'#8898aa',marginBottom:'0.35rem',display:'flex',gap:'0.5rem'}}><span style={{color:AMBER}}>✓</span>{c}</div>)}</div>}
         {reputationScore!=='0' && <div style={{marginTop:'auto',border:`1px solid ${AMBER}33`,padding:'1.25rem',textAlign:'center',background:`${AMBER}08`}}><div style={{fontSize:'0.5rem',color:`${AMBER}66`,letterSpacing:'0.15em',textTransform:'uppercase',marginBottom:'0.35rem'}}>Web3 Score</div><div style={{fontSize:'2.5rem',fontWeight:900,color:AMBER,lineHeight:1}}>{reputationScore}</div></div>}
@@ -210,10 +215,10 @@ function BrutalistTemplate({data, ghData, parseList, projects, reputationScore}:
           
           <div style={{background:'#00ffff',border:'3px solid #000',padding:'1.25rem',boxShadow:'5px 5px 0 #000'}}>
             <div style={{fontWeight:900,fontSize:'1.2rem',marginBottom:'0.75rem',borderBottom:'2px solid #000'}}>CONTACT</div>
-            {data.e&&<div style={{fontWeight:700,marginBottom:'0.3rem'}}>✉ {data.e}</div>}
-            {data.tw&&<div style={{fontWeight:700,marginBottom:'0.3rem'}}>𝕏 @{data.tw}</div>}
+            {data.e&&<div style={{fontWeight:700,marginBottom:'0.3rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><MailIcon/> {data.e}</div>}
+            {data.tw&&<div style={{fontWeight:700,marginBottom:'0.3rem',display:'flex',alignItems:'center',gap:'0.4rem'}}><XIcon/> @{data.tw}</div>}
             {data.gh&&<div style={{fontWeight:700,marginBottom:'0.3rem'}}>gh/{data.gh}</div>}
-            {data.web&&<div style={{fontWeight:700}}>🌐 {data.web.replace(/https?:\/\//,'')}</div>}
+            {data.web&&<div style={{fontWeight:700,display:'flex',alignItems:'center',gap:'0.4rem'}}><WebIcon/> {data.web.replace(/https?:\/\//,'')}</div>}
           </div>
 
           {sklList.length>0 && <div>
@@ -287,82 +292,122 @@ const GlassSH = ({label}:{label:string}) => (
   <div style={{fontSize:'0.75rem',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.15em',color:'#a2b2e8',marginBottom:'1rem',borderBottom:'1px solid rgba(162,178,232,0.2)',paddingBottom:'0.5rem'}}>{label}</div>
 );
 
-function GlassTemplate({data, ghData, parseList, projects, reputationScore}: TmplProps) {
+/* ══════════════════════════════════════════════════════════════
+   TEMPLATE 5 — GLASS (Aurora Editorial)
+══════════════════════════════════════════════════════════════ */
+function GlassTemplate({data, parseList, projects, reputationScore}: TmplProps) {
   const expList = parseList(data.exp);
+  const eduList = parseList(data.edu);
   const sklList = parseList(data.skl);
 
-  return (
-    <div style={{background:'#040509',fontFamily:"'Inter',system-ui,sans-serif",color:'#e4eaf5',minHeight:'700px',position:'relative',overflow:'hidden',padding:'2rem'}}>
-      {/* Background Orbs */}
-      <div style={{position:'absolute',top:'-10%',left:'-10%',width:'50%',aspectRatio:'1',background:'radial-gradient(circle, rgba(62,43,158,0.4) 0%, transparent 70%)',filter:'blur(60px)',zIndex:0,pointerEvents:'none'}}/>
-      <div style={{position:'absolute',bottom:'-20%',right:'-10%',width:'60%',aspectRatio:'1',background:'radial-gradient(circle, rgba(32,95,175,0.3) 0%, transparent 70%)',filter:'blur(60px)',zIndex:0,pointerEvents:'none'}}/>
-      
-      <div style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:'320px 1fr',gap:'2rem'}}>
-        <div style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
-          <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'24px',padding:'2rem',backdropFilter:'blur(20px)',boxShadow:'0 20px 40px rgba(0,0,0,0.4)'}}>
-            <div style={{display:'flex',justifyContent:'center',marginBottom:'1.5rem'}}>
-              {data.p ? <img src={data.p} alt={data.n} style={{width:'140px',height:'140px',objectFit:'cover',borderRadius:'50%',border:'2px solid rgba(162,178,232,0.3)',boxShadow:'0 0 20px rgba(62,43,158,0.5)'}}/> : <div style={{width:'140px',height:'140px',borderRadius:'50%',background:'linear-gradient(135deg, rgba(62,43,158,0.5), rgba(32,95,175,0.5))',border:'2px solid rgba(162,178,232,0.3)'}}/>}
-            </div>
-            <div style={{textAlign:'center'}}>
-              <div style={{fontSize:'1.8rem',fontWeight:700,background:'linear-gradient(to right, #fff, #a2b2e8)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',lineHeight:1.2,marginBottom:'0.3rem'}}>{data.n||'Your Name'}</div>
-              <div style={{fontSize:'0.85rem',color:'#8497ce',fontWeight:500,letterSpacing:'0.05em'}}>{data.r||'Role'}</div>
-              {data.avail==='1' && <div style={{marginTop:'1rem',display:'inline-flex',alignItems:'center',gap:'0.4rem',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',color:'#818cf8',padding:'0.3rem 0.8rem',borderRadius:'100px',fontSize:'0.65rem',fontWeight:600}}><div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#818cf8',boxShadow:'0 0 8px #818cf8'}}/> AVAILABLE</div>}
-            </div>
-          </div>
+  const noiseSvg = "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")";
 
-          <div style={{background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.05)',borderRadius:'24px',padding:'1.75rem',backdropFilter:'blur(20px)'}}>
-            {data.b && <p style={{fontSize:'0.8rem',color:'#b0c0d0',lineHeight:1.7,marginBottom:'1.5rem'}}>{data.b}</p>}
-            <GlassSH label="Contact"/>
-            <div style={{display:'flex',flexDirection:'column',gap:'0.6rem'}}>
-              {data.e&&<div style={{fontSize:'0.75rem',color:'#a2b2e8'}}>{data.e}</div>}
-              {data.tw&&<div style={{fontSize:'0.75rem',color:'#a2b2e8'}}>𝕏 / @{data.tw}</div>}
-              {data.gh&&<div style={{fontSize:'0.75rem',color:'#a2b2e8'}}>GitHub / {data.gh}</div>}
-              {data.web&&<div style={{fontSize:'0.75rem',color:'#a2b2e8'}}>🌐 {data.web.replace(/https?:\/\//,'')}</div>}
+  return (
+    <div style={{position:'relative', background:'#020205', minHeight:'100vh', overflow:'hidden', color:'#fff', fontFamily:"'Inter', system-ui, sans-serif"}}>
+      {/* Aurora Background Layers */}
+      <div style={{position:'absolute', top:'-20%', left:'-10%', width:'70%', height:'70%', background:'radial-gradient(ellipse at center, rgba(153,69,255,0.4) 0%, transparent 60%)', filter:'blur(80px)', zIndex:0, pointerEvents:'none'}}/>
+      <div style={{position:'absolute', bottom:'-20%', right:'-10%', width:'80%', height:'80%', background:'radial-gradient(ellipse at center, rgba(30,136,229,0.3) 0%, transparent 60%)', filter:'blur(100px)', zIndex:0, pointerEvents:'none'}}/>
+      <div style={{position:'absolute', top:'30%', left:'40%', width:'50%', height:'50%', background:'radial-gradient(ellipse at center, rgba(233,30,99,0.2) 0%, transparent 60%)', filter:'blur(90px)', zIndex:0, pointerEvents:'none'}}/>
+      
+      {/* Noise Texture Overlay */}
+      <div style={{position:'absolute', inset:0, background:noiseSvg, opacity:0.04, mixBlendMode:'overlay', zIndex:1, pointerEvents:'none'}}/>
+
+      <div style={{position:'relative', zIndex:2, padding:'5rem 4rem', maxWidth:'1200px', margin:'0 auto'}}>
+        
+        {/* Editorial Header */}
+        <div style={{textAlign:'center', marginBottom:'6rem'}}>
+          {data.p && (
+            <div style={{marginBottom:'2.5rem', display:'inline-block'}}>
+              <img src={data.p} alt="profile" style={{width:'160px', height:'160px', borderRadius:'50%', objectFit:'cover', filter:'grayscale(20%) contrast(1.1)', boxShadow:'0 20px 50px rgba(0,0,0,0.5)'}}/>
             </div>
+          )}
+          <h1 style={{fontFamily:"'Playfair Display', 'Georgia', serif", fontSize:'clamp(3.5rem, 6vw, 5.5rem)', fontWeight:400, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 1rem 0', lineHeight:1.1, color:'#fff'}}>
+            {data.n || 'Ethereal Native'}
+          </h1>
+          <div style={{fontSize:'1rem', textTransform:'uppercase', letterSpacing:'0.25em', color:'rgba(255,255,255,0.6)', fontWeight:300}}>
+            {data.r || 'Digital Artisan'}
           </div>
           
-          {reputationScore!=='0' && <div style={{background:'linear-gradient(135deg, rgba(62,43,158,0.2), rgba(32,95,175,0.2))',border:'1px solid rgba(162,178,232,0.2)',borderRadius:'24px',padding:'1.5rem',backdropFilter:'blur(20px)',textAlign:'center',marginTop:'auto'}}>
-            <div style={{fontSize:'0.65rem',color:'#8497ce',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:'0.5rem'}}>Web3 Reputation</div>
-            <div style={{fontSize:'2.8rem',fontWeight:300,color:'#fff',textShadow:'0 0 20px rgba(162,178,232,0.5)',lineHeight:1}}>{reputationScore}</div>
-          </div>}
+          {data.b && (
+            <p style={{maxWidth:'600px', margin:'2.5rem auto 0', fontSize:'1.1rem', lineHeight:1.8, color:'rgba(255,255,255,0.7)', fontWeight:300}}>
+              {data.b}
+            </p>
+          )}
+
+          <div style={{display:'flex', justifyContent:'center', gap:'2rem', marginTop:'3rem'}}>
+            {data.avail==='1' && <div style={{fontSize:'0.75rem', textTransform:'uppercase', letterSpacing:'0.1em', display:'flex', alignItems:'center', gap:'0.5rem'}}><span style={{width:'6px', height:'6px', borderRadius:'50%', background:'#14F195', boxShadow:'0 0 10px #14F195'}}/> Available</div>}
+            {data.tw && <a href={`https://twitter.com/${data.tw}`} target="_blank" rel="noreferrer" style={{fontSize:'0.75rem', textTransform:'uppercase', letterSpacing:'0.1em', color:'rgba(255,255,255,0.6)', textDecoration:'none', borderBottom:'1px solid rgba(255,255,255,0.2)', display:'flex', alignItems:'center', gap:'0.4rem'}}><XIcon/> Twitter</a>}
+            {data.web && <a href={data.web.startsWith('http')?data.web:`https://${data.web}`} target="_blank" rel="noreferrer" style={{fontSize:'0.75rem', textTransform:'uppercase', letterSpacing:'0.1em', color:'rgba(255,255,255,0.6)', textDecoration:'none', borderBottom:'1px solid rgba(255,255,255,0.2)', display:'flex', alignItems:'center', gap:'0.4rem'}}><WebIcon/> Website</a>}
+          </div>
         </div>
 
-        <div style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
-          {expList.length>0 && <div style={{background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.05)',borderRadius:'24px',padding:'2rem',backdropFilter:'blur(20px)'}}>
-            <GlassSH label="Experience"/>
-            <div style={{display:'flex',flexDirection:'column',gap:'1.25rem'}}>
-              {expList.map((e,i)=>{const[date,...rest]=e.split(':');return(
-                <div key={i} style={{position:'relative',paddingLeft:'1.25rem',borderLeft:'1px solid rgba(162,178,232,0.2)'}}>
-                  <div style={{position:'absolute',left:'-3px',top:'5px',width:'5px',height:'5px',borderRadius:'50%',background:'#a2b2e8',boxShadow:'0 0 8px #a2b2e8'}}/>
-                  <div style={{fontSize:'0.65rem',color:'#8497ce',marginBottom:'0.2rem'}}>{date}</div>
-                  <div style={{fontSize:'0.9rem',fontWeight:500,color:'#e4eaf5'}}>{rest.join(':').trim()}</div>
+        {/* Content Grid (Cardless) */}
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4rem'}}>
+          
+          <div style={{display:'flex', flexDirection:'column', gap:'4rem'}}>
+            {expList.length > 0 && (
+              <div>
+                <h3 style={{fontFamily:"'Playfair Display', serif", fontSize:'1.8rem', fontStyle:'italic', fontWeight:400, borderBottom:'1px solid rgba(255,255,255,0.1)', paddingBottom:'1rem', marginBottom:'2rem', color:'#fff'}}>Experience</h3>
+                <div style={{display:'flex', flexDirection:'column', gap:'2rem'}}>
+                  {expList.map((e,i)=>(
+                    <div key={i}>
+                      <div style={{fontSize:'1.1rem', fontWeight:300, color:'#fff', marginBottom:'0.4rem', letterSpacing:'0.02em'}}>{e.split(':')[1] || e}</div>
+                      {e.includes(':') && <div style={{fontSize:'0.8rem', color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em'}}>{e.split(':')[0]}</div>}
+                    </div>
+                  ))}
                 </div>
-              );})}
-            </div>
-          </div>}
+              </div>
+            )}
 
-          {(projects.length>0 || ghData?.topRepos?.length>0) && <div style={{background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.05)',borderRadius:'24px',padding:'2rem',backdropFilter:'blur(20px)'}}>
-            <GlassSH label="Selected Work"/>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
-              {projects.map((p,i)=>(
-                <div key={i} style={{background:'rgba(0,0,0,0.2)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'16px',padding:'1.25rem',transition:'transform 0.2s'}}>
-                  <div style={{fontSize:'0.9rem',fontWeight:600,color:'#fff',marginBottom:'0.4rem'}}>{p.name}</div>
-                  {p.desc&&<div style={{fontSize:'0.7rem',color:'#8497ce',lineHeight:1.5,marginBottom:'0.75rem'}}>{p.desc}</div>}
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'auto'}}>
-                    <div style={{fontSize:'0.6rem',color:'#6b7280',background:'rgba(255,255,255,0.05)',padding:'0.2rem 0.5rem',borderRadius:'100px'}}>{p.tech||'Project'}</div>
-                    {p.url&&<a href={p.url} target="_blank" rel="noreferrer" style={{color:'#a2b2e8',fontSize:'0.7rem',textDecoration:'none'}}>↗</a>}
-                  </div>
+            {eduList.length > 0 && (
+              <div>
+                <h3 style={{fontFamily:"'Playfair Display', serif", fontSize:'1.8rem', fontStyle:'italic', fontWeight:400, borderBottom:'1px solid rgba(255,255,255,0.1)', paddingBottom:'1rem', marginBottom:'2rem', color:'#fff'}}>Education</h3>
+                <div style={{display:'flex', flexDirection:'column', gap:'2rem'}}>
+                  {eduList.map((e,i)=>(
+                    <div key={i}>
+                      <div style={{fontSize:'1.1rem', fontWeight:300, color:'#fff', marginBottom:'0.4rem', letterSpacing:'0.02em'}}>{e.split(':')[1] || e}</div>
+                      {e.includes(':') && <div style={{fontSize:'0.8rem', color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em'}}>{e.split(':')[0]}</div>}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>}
+              </div>
+            )}
+          </div>
 
-          {sklList.length>0 && <div style={{background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.05)',borderRadius:'24px',padding:'2rem',backdropFilter:'blur(20px)'}}>
-            <GlassSH label="Capabilities"/>
-            <div style={{display:'flex',flexWrap:'wrap',gap:'0.6rem'}}>
-              {sklList.map((s,i)=><span key={i} style={{fontSize:'0.75rem',color:'#c4d0eb',background:'rgba(162,178,232,0.1)',border:'1px solid rgba(162,178,232,0.2)',padding:'0.4rem 0.8rem',borderRadius:'100px'}}>{s}</span>)}
-            </div>
-          </div>}
+          <div style={{display:'flex', flexDirection:'column', gap:'4rem'}}>
+            {sklList.length > 0 && (
+              <div>
+                <h3 style={{fontFamily:"'Playfair Display', serif", fontSize:'1.8rem', fontStyle:'italic', fontWeight:400, borderBottom:'1px solid rgba(255,255,255,0.1)', paddingBottom:'1rem', marginBottom:'2rem', color:'#fff'}}>Capabilities</h3>
+                <div style={{fontSize:'1rem', lineHeight:1.8, color:'rgba(255,255,255,0.7)', fontWeight:300}}>
+                  {sklList.join(', ')}
+                </div>
+              </div>
+            )}
+
+            {projects.length > 0 && (
+              <div>
+                <h3 style={{fontFamily:"'Playfair Display', serif", fontSize:'1.8rem', fontStyle:'italic', fontWeight:400, borderBottom:'1px solid rgba(255,255,255,0.1)', paddingBottom:'1rem', marginBottom:'2rem', color:'#fff'}}>Selected Work</h3>
+                <div style={{display:'flex', flexDirection:'column', gap:'2.5rem'}}>
+                  {projects.map((p,i)=>(
+                    <div key={i}>
+                      <div style={{fontSize:'1.1rem', fontWeight:400, color:'#fff', marginBottom:'0.5rem'}}>{p.name}</div>
+                      <div style={{fontSize:'0.95rem', color:'rgba(255,255,255,0.5)', lineHeight:1.6, fontWeight:300}}>{p.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {reputationScore !== '...' && (
+              <div style={{marginTop:'2rem', paddingTop:'2rem', borderTop:'1px solid rgba(255,255,255,0.1)'}}>
+                <div style={{fontSize:'0.75rem', textTransform:'uppercase', letterSpacing:'0.15em', color:'rgba(255,255,255,0.5)', marginBottom:'1rem'}}>Onchain Reputation</div>
+                <div style={{fontFamily:"'Playfair Display', serif", fontSize:'5rem', fontStyle:'italic', lineHeight:1, color:'#fff', textShadow:'0 0 30px rgba(255,255,255,0.2)'}}>
+                  {reputationScore}
+                </div>
+              </div>
+            )}
+          </div>
+          
         </div>
       </div>
     </div>
@@ -392,9 +437,9 @@ function PaperTemplate({data, parseList, projects, reputationScore}: TmplProps) 
           <div style={{fontSize:'2.5rem',fontWeight:400,color:'#111',marginBottom:'0.5rem',letterSpacing:'-0.5px'}}>{data.n||'Firstname Lastname'}</div>
           <div style={{fontSize:'1rem',fontStyle:'italic',color:'#555',marginBottom:'1rem'}}>{data.r||'Professional Title'}</div>
           <div style={{display:'flex',justifyContent:'center',gap:'1rem',fontSize:'0.75rem',color:'#444',fontFamily:"system-ui,sans-serif"}}>
-            {data.e&&<span>{data.e}</span>}
-            {data.tw&&<span>• @{data.tw}</span>}
-            {data.web&&<span>• {data.web.replace(/https?:\/\//,'')}</span>}
+            {data.e&&<span style={{display:'flex',alignItems:'center',gap:'0.4rem'}}><MailIcon/> {data.e}</span>}
+            {data.tw&&<span style={{display:'flex',alignItems:'center',gap:'0.4rem'}}>• <XIcon/> @{data.tw}</span>}
+            {data.web&&<span style={{display:'flex',alignItems:'center',gap:'0.4rem'}}>• <WebIcon/> {data.web.replace(/https?:\/\//,'')}</span>}
           </div>
           {data.avail==='1' && <div style={{marginTop:'1rem',fontSize:'0.7rem',textTransform:'uppercase',letterSpacing:'0.1em',color:'#800000',fontFamily:"system-ui,sans-serif"}}>Currently Available for Opportunities</div>}
         </div>
@@ -574,7 +619,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
   const tmpl = data.tmpl || 'default';
   const tmplProps: TmplProps = {data,ghData,solData,evmData,projects,parseList,reputationScore,wallet,isDark,c};
-  const isSpecialTemplate = ['cyber','minimal','modern','brutalist','glass','paper'].includes(tmpl);
+  const isSpecialTemplate = ['cyber','minimal','modern','brutalist','glass','paper','solana'].includes(tmpl);
 
   return (
     <>
@@ -633,7 +678,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       {/* ── Full-width CV page with side decorations ── */}
       <div style={{
         position:'relative', minHeight:'100vh',
-        background: tmpl==='minimal' ? '#e8e8e8' : tmpl==='modern' ? '#e0e0e0' : '#0e0e0e',
+        background: tmpl==='minimal' ? '#e8e8e8' : tmpl==='modern' ? '#e0e0e0' : tmpl==='solana' ? '#070709' : '#0e0e0e',
         padding:'2rem 0 4rem',
       }}>
         {/* Left decoration panel */}
@@ -657,8 +702,9 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
           )}
           {tmpl==='minimal' && <div style={{display:'flex',flexDirection:'column',gap:'0.5rem',alignItems:'flex-end'}}>{[...Array(5)].map((_,i)=><div key={i} style={{width:`${40-i*4}px`,height:'2px',background:'rgba(0,0,0,0.15)'}}/>)}</div>}
           {tmpl==='brutalist' && <div style={{display:'flex',flexDirection:'column',gap:'1rem',alignItems:'flex-end'}}><div style={{width:'80px',height:'20px',background:'#000',transform:'skew(-20deg)'}}/><div style={{fontSize:'2rem',fontWeight:900,color:'rgba(0,0,0,0.1)',writingMode:'vertical-rl'}}>RAW</div></div>}
-          {tmpl==='glass' && <div style={{width:'2px',height:'150px',background:'linear-gradient(to bottom, transparent, rgba(162,178,232,0.5), transparent)'}}/>}
+          {tmpl==='glass' && <div style={{width:'1px',height:'200px',background:'linear-gradient(to bottom, transparent, rgba(255,255,255,0.4), transparent)'}}/>}
           {tmpl==='paper' && <div style={{fontSize:'0.7rem',fontFamily:"'Georgia',serif",color:'rgba(0,0,0,0.2)',writingMode:'vertical-rl',letterSpacing:'0.2em'}}>C V .</div>}
+          {tmpl==='solana' && <div style={{width:'2px',height:'100%',background:'repeating-linear-gradient(to bottom, #333, #333 10px, transparent 10px, transparent 20px)'}}/>}
           {tmpl==='default' && (
             <div style={{display:'flex',flexDirection:'column',gap:'0.5rem',alignItems:'flex-end'}}>
               {[...Array(8)].map((_,i)=><div key={i} style={{width:`${60-i*5}px`,height:'2px',background:`rgba(244,106,42,${(8-i)/8*0.7})`}}/>)}
@@ -678,8 +724,9 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
           {tmpl==='modern' && <div><div style={{width:'4px',height:'100px',background:'linear-gradient(to bottom,#e63329,transparent)',borderRadius:'2px',marginBottom:'0.75rem'}}/><div style={{fontSize:'0.58rem',color:'rgba(230,51,41,0.35)',textTransform:'uppercase',letterSpacing:'0.15em',writingMode:'vertical-rl'}}>YoChain CV</div></div>}
           {tmpl==='minimal' && <div style={{display:'flex',flexDirection:'column',gap:'0.5rem'}}>{[...Array(5)].map((_,i)=><div key={i} style={{width:`${40-i*4}px`,height:'2px',background:'rgba(0,0,0,0.15)'}}/>)}</div>}
           {tmpl==='brutalist' && <div style={{width:'40px',height:'40px',background:'#ffde00',border:'3px solid #000',boxShadow:'4px 4px 0 #000',transform:'rotate(15deg)'}}/>}
-          {tmpl==='glass' && <div style={{width:'100px',height:'100px',borderRadius:'50%',background:'radial-gradient(circle, rgba(162,178,232,0.1), transparent)',filter:'blur(20px)'}}/>}
+          {tmpl==='glass' && <div style={{width:'10px',height:'10px',background:'rgba(255,255,255,0.8)',borderRadius:'50%',boxShadow:'0 0 20px 5px rgba(255,255,255,0.3)'}}/>}
           {tmpl==='paper' && <div style={{width:'1px',height:'200px',background:'rgba(0,0,0,0.1)'}}/>}
+          {tmpl==='solana' && <div style={{width:'2px',height:'100%',background:'repeating-linear-gradient(to bottom, #333, #333 10px, transparent 10px, transparent 20px)'}}/>}
           {tmpl==='default' && <div style={{display:'flex',flexDirection:'column',gap:'0.5rem'}}>{[...Array(6)].map((_,i)=><div key={i} style={{width:`${50-i*4}px`,height:'2px',background:`rgba(244,106,42,${(6-i)/6*0.5})`}}/>)}</div>}
         </div>
 
@@ -692,6 +739,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
             {tmpl==='brutalist' && <BrutalistTemplate {...tmplProps}/>}
             {tmpl==='glass'   && <GlassTemplate {...tmplProps}/>}
             {tmpl==='paper'   && <PaperTemplate {...tmplProps}/>}
+            {tmpl==='solana'  && <SolanaTemplate {...tmplProps}/>}
             {tmpl==='default' && <DefaultTemplate {...tmplProps} cvTheme={cvTheme}/>}
           </div>
         </div>
@@ -864,6 +912,137 @@ function DefaultTemplate({data,ghData,solData,evmData,projects,parseList,reputat
           </>)}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TEMPLATE 7 — SOLANA (Premium Web3 Glass -> BRUTALIST SOLANA)
+══════════════════════════════════════════════════════════════ */
+function SolanaTemplate({data, parseList, projects, reputationScore}: TmplProps) {
+  const expList = parseList(data.exp);
+  const eduList = parseList(data.edu);
+  const sklList = parseList(data.skl);
+
+  const gridLineStyle = { borderBottom: '2px solid #222', padding: '3rem 0' };
+
+  return (
+    <div style={{fontFamily:"'Inter', system-ui, sans-serif", color:'#fff', background:'#000', minHeight:'100vh', border:'2px solid #222', position:'relative', overflow:'hidden'}}>
+      {/* Decorative Crosshairs */}
+      <div style={{position:'absolute', top:0, left:0, width:'20px', height:'20px', borderRight:'2px solid #14F195', borderBottom:'2px solid #14F195'}}/>
+      <div style={{position:'absolute', top:0, right:0, width:'20px', height:'20px', borderLeft:'2px solid #14F195', borderBottom:'2px solid #14F195'}}/>
+      
+      {/* Massive Header Section */}
+      <div style={{padding:'4rem 3rem', borderBottom:'2px solid #222'}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:'2rem'}}>
+          <div style={{maxWidth:'80%'}}>
+            <div style={{fontSize:'0.8rem', color:'#9945FF', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:'1rem'}}>High-Performance Node</div>
+            <h1 style={{fontSize:'clamp(4rem, 8vw, 8rem)', fontWeight:900, lineHeight:0.85, letterSpacing:'-0.05em', color:'#14F195', margin:'0 0 1.5rem 0', wordBreak:'break-word', textTransform:'uppercase'}}>
+              {data.n || 'NATIVE'}
+            </h1>
+            <h2 style={{fontSize:'clamp(1.5rem, 3vw, 2.5rem)', fontWeight:800, color:'#fff', margin:'0 0 2.5rem 0', textTransform:'uppercase', letterSpacing:'-0.02em'}}>{data.r || 'WEB3 DEVELOPER'}</h2>
+            
+            {data.b && (
+              <p style={{fontSize:'1.25rem', lineHeight:1.5, color:'#aaa', maxWidth:'800px', borderLeft:'6px solid #9945FF', paddingLeft:'1.5rem', fontWeight:500, margin:'0'}}>
+                {data.b}
+              </p>
+            )}
+          </div>
+          
+          {data.p && (
+            <div style={{flexShrink:0, width:'180px', height:'180px', border:'4px solid #14F195', filter:'grayscale(100%) contrast(1.2)'}}>
+              <img src={data.p} alt="profile" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}}/>
+            </div>
+          )}
+        </div>
+
+        <div style={{marginTop:'3rem', display:'flex', gap:'1rem', flexWrap:'wrap'}}>
+          {data.avail==='1' && <div style={{background:'#14F195', color:'#000', padding:'0.75rem 1.5rem', fontSize:'0.9rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em'}}>AVAILABLE FOR DEPLOYMENT</div>}
+          {data.tw && <a href={`https://twitter.com/${data.tw}`} target="_blank" rel="noreferrer" style={{border:'2px solid #333', color:'#fff', padding:'0.75rem 1.5rem', fontSize:'0.9rem', fontWeight:800, textDecoration:'none', textTransform:'uppercase', display:'flex', alignItems:'center', gap:'0.6rem'}}><XIcon/> @{data.tw}</a>}
+          {data.web && <a href={data.web.startsWith('http')?data.web:`https://${data.web}`} target="_blank" rel="noreferrer" style={{border:'2px solid #333', color:'#fff', padding:'0.75rem 1.5rem', fontSize:'0.9rem', fontWeight:800, textDecoration:'none', textTransform:'uppercase', display:'flex', alignItems:'center', gap:'0.6rem'}}><WebIcon/> {data.web.replace(/https?:\/\//,'')}</a>}
+        </div>
+      </div>
+
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', minHeight:'600px'}}>
+        {/* Left Column */}
+        <div style={{borderRight:'2px solid #222', padding:'0 3rem'}}>
+          {expList.length > 0 && (
+            <div style={gridLineStyle}>
+              <div style={{background:'#9945FF', color:'#000', padding:'0.4rem 1rem', display:'inline-block', fontSize:'0.85rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'2.5rem'}}>EXPERIENCE_LOG</div>
+              <div style={{display:'flex', flexDirection:'column', gap:'2.5rem'}}>
+                {expList.map((e,i)=>(
+                  <div key={i} style={{borderLeft:'2px solid #333', paddingLeft:'1.5rem', position:'relative'}}>
+                    <div style={{position:'absolute', top:'8px', left:'-7px', width:'12px', height:'12px', background:'#000', border:'2px solid #9945FF'}}/>
+                    <div style={{fontSize:'1.4rem', fontWeight:800, color:'#fff', textTransform:'uppercase', letterSpacing:'-0.02em'}}>{e.split(':')[1] || e}</div>
+                    {e.includes(':') && <div style={{fontSize:'0.95rem', color:'#14F195', fontWeight:700, marginTop:'0.4rem', fontFamily:'monospace'}}>{e.split(':')[0]}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {eduList.length > 0 && (
+            <div style={{...gridLineStyle, borderBottom:'none'}}>
+              <div style={{background:'#333', color:'#fff', padding:'0.4rem 1rem', display:'inline-block', fontSize:'0.85rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'2.5rem'}}>EDUCATION_BASE</div>
+              <div style={{display:'flex', flexDirection:'column', gap:'2.5rem'}}>
+                {eduList.map((e,i)=>(
+                  <div key={i} style={{borderLeft:'2px solid #333', paddingLeft:'1.5rem', position:'relative'}}>
+                    <div style={{position:'absolute', top:'8px', left:'-7px', width:'12px', height:'12px', background:'#000', border:'2px solid #fff'}}/>
+                    <div style={{fontSize:'1.3rem', fontWeight:800, color:'#fff', textTransform:'uppercase'}}>{e.split(':')[1] || e}</div>
+                    {e.includes(':') && <div style={{fontSize:'0.9rem', color:'#888', fontWeight:700, marginTop:'0.4rem', fontFamily:'monospace'}}>{e.split(':')[0]}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column */}
+        <div style={{padding:'0 3rem', display:'flex', flexDirection:'column'}}>
+          {sklList.length > 0 && (
+            <div style={gridLineStyle}>
+              <div style={{background:'#14F195', color:'#000', padding:'0.4rem 1rem', display:'inline-block', fontSize:'0.85rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'2.5rem'}}>CAPABILITIES</div>
+              <div style={{display:'flex', flexWrap:'wrap', gap:'0.75rem'}}>
+                {sklList.map((s,i)=>(
+                  <span key={i} style={{border:'2px solid #14F195', padding:'0.5rem 1rem', fontSize:'0.95rem', fontWeight:800, color:'#14F195', textTransform:'uppercase'}}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {projects.length > 0 && (
+            <div style={{...gridLineStyle, flexGrow:1}}>
+              <div style={{background:'#fff', color:'#000', padding:'0.4rem 1rem', display:'inline-block', fontSize:'0.85rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'2.5rem'}}>DEPLOYMENTS</div>
+              <div style={{display:'flex', flexDirection:'column', gap:'1.5rem'}}>
+                {projects.map((p,i)=>(
+                  <div key={i} style={{border:'2px solid #333', padding:'1.5rem', position:'relative'}}>
+                    <div style={{position:'absolute', top:'-10px', right:'1.5rem', background:'#000', color:'#14F195', padding:'0 0.5rem', fontSize:'0.7rem', fontWeight:800, fontFamily:'monospace'}}>PROJ_0{i+1}</div>
+                    <div style={{fontWeight:900, fontSize:'1.2rem', color:'#fff', marginBottom:'0.5rem', textTransform:'uppercase'}}>{p.name}</div>
+                    <div style={{color:'#aaa', fontSize:'1rem', lineHeight:1.5, fontWeight:500}}>{p.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {reputationScore !== '...' && (
+        <div style={{borderTop:'2px solid #222', padding:'4rem 3rem', background:'#14F195', position:'relative', overflow:'hidden'}}>
+          <div style={{position:'relative', zIndex:1, display:'flex', alignItems:'flex-end', justifyContent:'space-between', flexWrap:'wrap'}}>
+            <div style={{fontSize:'1.5rem', fontWeight:900, color:'#000', textTransform:'uppercase', letterSpacing:'-0.03em', maxWidth:'200px'}}>ONCHAIN<br/>REPUTATION<br/>SCORE</div>
+            <div style={{fontSize:'clamp(6rem, 15vw, 12rem)', fontWeight:900, lineHeight:0.8, letterSpacing:'-0.05em', color:'#000', margin:'0'}}>
+              {reputationScore}
+            </div>
+          </div>
+          {/* Decorative giant text in background */}
+          <div style={{position:'absolute', top:'-10%', right:'-5%', fontSize:'30vw', fontWeight:900, color:'rgba(0,0,0,0.05)', pointerEvents:'none', lineHeight:0.8}}>
+            {reputationScore}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

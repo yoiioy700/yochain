@@ -3,6 +3,12 @@
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+
+const WalletMultiButton = dynamic(
+  () => import('@solana/wallet-adapter-react-ui').then((mod) => mod.WalletMultiButton),
+  { ssr: false }
+);
 
 export default function Nav() {
   const { data: session } = useSession();
@@ -22,6 +28,7 @@ export default function Nav() {
             Yo<span>Chain</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <WalletMultiButton style={{ height: '36px', fontSize: '0.82rem', padding: '0 1rem', background: '#2a2a2a' }} />
             {session?.user && (
               <Link
                 href="/builder"
