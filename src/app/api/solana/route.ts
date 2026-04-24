@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { resolve, reverseLookup } from '@bonfida/spl-name-service';
 
 const KNOWN_PROTOCOLS: Record<string, string> = {
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4': 'Jupiter',
@@ -20,11 +21,39 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Wallet address required' }, { status: 400 });
   }
 
+  let targetWallet = wallet;
+  let domainName: string | null = null;
+  const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
+  const rpcConnection = new Connection(rpcUrl, 'confirmed');
+
+  if (wallet.toLowerCase().endsWith('.sol')) {
+    domainName = wallet.toLowerCase();
+    try {
+      // Resolve .sol to pubkey (drop the .sol for the resolve function usually, but check standard)
+      // The resolve function typically takes the full domain like "bonfida.sol"
+      const resolvedKey = await resolve(rpcConnection, domainName);
+      targetWallet = resolvedKey.toBase58();
+    } catch (err) {
+      return NextResponse.json({ error: 'Failed to resolve .sol domain' }, { status: 400 });
+    }
+  }
+
   let pubkey: PublicKey;
   try {
-    pubkey = new PublicKey(wallet);
+    pubkey = new PublicKey(targetWallet);
   } catch {
     return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 });
+  }
+
+  if (!domainName) {
+    try {
+      const reverse = await reverseLookup(rpcConnection, pubkey);
+      if (reverse) {
+        domainName = reverse + '.sol';
+      }
+    } catch (err) {
+      // No reverse record found
+    }
   }
 
   const heliusKey = process.env.HELIUS_API_KEY;
@@ -34,13 +63,13 @@ export async function GET(req: NextRequest) {
     try {
       const baseUrl = `https://api.helius.xyz`;
 
-      // Run in parallel: balance, token accounts, enriched tx history
-      const [balanceRes, tokenRes, txRes] = await Promise.all([
+      // Run in parallel: balance, token accounts, enriched tx history, and signatures from RPC
+      const [balanceRes, tokenRes, txRes, signatures] = await Promise.all([
         // SOL Balance via Helius RPC
         fetch(`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [wallet] }),
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [targetWallet] }),
           signal: AbortSignal.timeout(8000),
         }).then(r => r.json()),
 
@@ -50,15 +79,18 @@ export async function GET(req: NextRequest) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             jsonrpc: '2.0', id: 1, method: 'getTokenAccountsByOwner',
-            params: [wallet, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }],
+            params: [targetWallet, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }],
           }),
           signal: AbortSignal.timeout(8000),
         }).then(r => r.json()),
 
         // Enriched transaction history — Helius parses protocol interactions
-        fetch(`${baseUrl}/v0/addresses/${wallet}/transactions?api-key=${heliusKey}&limit=100`, {
+        fetch(`${baseUrl}/v0/addresses/${targetWallet}/transactions?api-key=${heliusKey}&limit=100`, {
           signal: AbortSignal.timeout(12000),
         }).then(r => r.ok ? r.json() : []).catch(() => []),
+
+        // Always fetch signatures from standard RPC for consistent total transaction count
+        rpcConnection.getSignaturesForAddress(pubkey, { limit: 1000 }),
       ]);
 
       const solBalance = (balanceRes?.result?.value || 0) / LAMPORTS_PER_SOL;
@@ -71,14 +103,12 @@ export async function GET(req: NextRequest) {
 
       // Parse enriched txs — extract protocols and stats
       const txList: any[] = Array.isArray(txRes) ? txRes : [];
-      const totalTransactions = txList.length;
+      const totalTransactions = signatures.length;
 
       const protocolSet = new Set<string>();
       let swapCount = 0;
       let nftCount = 0;
-      let firstTxDate: string | null = null;
-      let walletAge = 'Unknown';
-
+      
       for (const tx of txList) {
         if (tx.type === 'SWAP') swapCount++;
         if (tx.type?.startsWith('NFT')) nftCount++;
@@ -95,11 +125,13 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // Wallet age from oldest tx timestamp
-      if (txList.length > 0) {
-        const oldest = txList[txList.length - 1];
-        if (oldest.timestamp) {
-          const ms = oldest.timestamp * 1000;
+      // Wallet age consistently calculated from signatures
+      let walletAge = 'Unknown';
+      let firstTxDate: string | null = null;
+      if (signatures.length > 0) {
+        const oldest = signatures[signatures.length - 1];
+        if (oldest.blockTime) {
+          const ms = oldest.blockTime * 1000;
           firstTxDate = new Date(ms).toISOString();
           const days = Math.floor((Date.now() - ms) / 86400000);
           if (days < 30) walletAge = `${days} days`;
@@ -108,8 +140,17 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      const badges: string[] = [];
+      const days = firstTxDate ? Math.floor((Date.now() - new Date(firstTxDate).getTime()) / 86400000) : 0;
+      if (days >= 365) badges.push('💎 Early Adopter');
+      if (swapCount >= 10 || protocolSet.size >= 5) badges.push('🔥 DeFi Degen');
+      if (tokenCount >= 5) badges.push('🙌 Diamond Hands');
+      if (nftCount >= 2) badges.push('🖼️ NFT Collector');
+
       return NextResponse.json({
-        wallet,
+        wallet: targetWallet,
+        domainName,
+        badges,
         sol: parseFloat(solBalance.toFixed(4)),
         totalTransactions,
         walletAge,
@@ -128,8 +169,7 @@ export async function GET(req: NextRequest) {
   }
 
   // ── FALLBACK PATH: Standard @solana/web3.js ─────────────────────────────────
-  const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
-  const connection = new Connection(rpcUrl, 'confirmed');
+  const connection = rpcConnection;
 
   try {
     const [balanceLamports, tokenAccounts, signatures] = await Promise.all([
@@ -162,8 +202,15 @@ export async function GET(req: NextRequest) {
       return amount && amount > 0;
     }).length;
 
+    const badges: string[] = [];
+    const days = firstTxDate ? Math.floor((Date.now() - new Date(firstTxDate).getTime()) / 86400000) : 0;
+    if (days >= 365) badges.push('💎 Early Adopter');
+    if (tokenCount >= 5) badges.push('🙌 Diamond Hands');
+
     return NextResponse.json({
-      wallet,
+      wallet: targetWallet,
+      domainName,
+      badges,
       sol: parseFloat(solBalance.toFixed(4)),
       totalTransactions,
       walletAge,

@@ -19,6 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      // @ts-ignore
       session.githubAccessToken = token.githubAccessToken as string;
       return session;
     },

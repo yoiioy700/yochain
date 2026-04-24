@@ -110,12 +110,12 @@ export default function BuilderPage() {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
-
   useEffect(() => {
     if (session?.user && !name) setName(session.user.name || '');
     if (session?.user?.image && !photoUrl) setPhotoUrl(session.user.image);
     if (session?.user?.email && !email) setEmail(session.user.email);
-  }, [session, name, photoUrl, email]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   const parseList = (str: string) => str.split(',').filter(s => s.trim().length > 0).map(s => s.trim());
   const serializeEntries = (entries: Entry[]) =>
@@ -194,6 +194,9 @@ export default function BuilderPage() {
                     { id: 'cyber',   label: 'CYBER',   desc: 'Neon green + dark' },
                     { id: 'minimal', label: 'MINIMAL',  desc: 'Clean white + BW' },
                     { id: 'modern',  label: 'MODERN',   desc: 'Red accent + bold' },
+                    { id: 'brutalist', label: 'BRUTALIST', desc: 'Neo-brutalism + yellow' },
+                    { id: 'glass',   label: 'GLASS',    desc: 'DeFi ethereal glow' },
+                    { id: 'paper',   label: 'PAPER',    desc: 'Scholar serif + textured' },
                   ].map(t => (
                     <div key={t.id} onClick={() => setTemplate(t.id)}
                       style={{ padding: '1.25rem 1rem', cursor: 'pointer',
@@ -300,18 +303,24 @@ export default function BuilderPage() {
             )}
 
             {/* Tab navigation buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', alignItems: 'center' }}>
               <button onClick={() => setActiveTab(t => Math.max(0, t - 1))}
                 className="btn btn-outline"
                 style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, opacity: activeTab === 0 ? 0.3 : 1, pointerEvents: activeTab === 0 ? 'none' : 'auto' }}>
                 ← PREV
               </button>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'center', letterSpacing: '1px' }}>{activeTab + 1} / 5</span>
-              <button onClick={() => setActiveTab(t => Math.min(4, t + 1))}
-                className="btn btn-outline"
-                style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, opacity: activeTab === 4 ? 0.3 : 1, pointerEvents: activeTab === 4 ? 'none' : 'auto' }}>
-                NEXT →
-              </button>
+              {activeTab === 4 ? (
+                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0 }}>
+                  View Full CV + Mint Identity →
+                </Link>
+              ) : (
+                <button onClick={() => setActiveTab(t => Math.min(4, t + 1))}
+                  className="btn btn-outline"
+                  style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0 }}>
+                  NEXT →
+                </button>
+              )}
             </div>
 
           </div>
@@ -321,13 +330,13 @@ export default function BuilderPage() {
             {/* Publish Section (Moved here to be always accessible) */}
             <div className="builder-panel" style={{ background: 'rgba(244, 106, 42, 0.05)', borderColor: 'var(--accent-orange)', marginBottom: '1rem', padding: '1rem' }}>
               <h3 style={{ marginBottom: '0.5rem', color: 'var(--accent-orange)', fontSize: '1.1rem' }}>Share Your Profile</h3>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                <strong>Blink Ready:</strong> Paste your link on X (Twitter) to let people tip you SOL directly!
+              </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button className="btn btn-primary" onClick={copyLink} style={{ flex: 1, padding: '0.5rem' }}>
                   {copied ? 'Link Copied!' : 'Copy Share Link'}
                 </button>
-                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" className="btn btn-outline" style={{ background: 'var(--bg-dark)', padding: '0.5rem 1rem' }}>
-                  View Full CV →
-                </Link>
               </div>
             </div>
 
@@ -437,6 +446,68 @@ export default function BuilderPage() {
                     </div>
                   </div>
                   
+                </div>
+              </div>
+            ) : template === 'brutalist' ? (
+              <div style={{ background: '#ffde00', borderRadius: '12px', border: '4px solid #000', boxShadow: '6px 6px 0 #000', overflow: 'hidden', zoom: 0.65, padding: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', borderBottom: '3px solid #000', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <div style={{ background: '#000', color: '#fff', display: 'inline-block', padding: '0.2rem 0.5rem', fontWeight: 800, fontSize: '0.6rem', transform: 'rotate(-2deg)', marginBottom: '0.5rem' }}>Web3 Native</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1 }}>{name||'YOUR NAME'}</div>
+                    <div style={{ background: '#ff61d8', border: '2px solid #000', display: 'inline-block', padding: '0.2rem 0.5rem', fontWeight: 700, fontSize: '0.8rem', marginTop: '0.5rem' }}>{role||'ROLE'}</div>
+                  </div>
+                  {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '80px', height: '80px', objectFit: 'cover', border: '3px solid #000', boxShadow: '4px 4px 0 #000', background:'#fff' }} /> : <div style={{ width: '80px', height: '80px', background: '#000' }} />}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div style={{ background: '#fff', border: '3px solid #000', padding: '1rem', boxShadow: '4px 4px 0 #000' }}>
+                    <div style={{ fontWeight: 900, borderBottom: '2px solid #000', marginBottom: '0.5rem' }}>EXPERIENCE</div>
+                    {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.5rem' }}><div style={{ background: '#000', color: '#fff', fontSize: '0.5rem', display: 'inline-block', padding: '0.1rem 0.3rem', fontWeight: 800 }}>{e.date}</div><div style={{ fontWeight: 800, fontSize: '0.8rem' }}>{e.title}</div></div>)}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ background: '#00ffff', border: '3px solid #000', padding: '1rem', boxShadow: '4px 4px 0 #000' }}>
+                      <div style={{ fontWeight: 900, borderBottom: '2px solid #000', marginBottom: '0.5rem' }}>SKILLS</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <span key={i} style={{ background: '#fff', border: '2px solid #000', padding: '0.2rem 0.4rem', fontSize: '0.6rem', fontWeight: 800 }}>{s}</span>)}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : template === 'glass' ? (
+              <div style={{ background: '#040509', borderRadius: '16px', overflow: 'hidden', zoom: 0.65, padding: '1.5rem', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '100%', height: '100%', background: 'radial-gradient(circle at top left, rgba(62,43,158,0.4), transparent 60%), radial-gradient(circle at bottom right, rgba(32,95,175,0.4), transparent 60%)', filter: 'blur(30px)', zIndex: 0 }} />
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '1.5rem', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
+                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%', border: '1px solid rgba(162,178,232,0.3)', marginBottom: '1rem', display: 'inline-block' }} /> : <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(162,178,232,0.1)', marginBottom: '1rem', display: 'inline-block' }} />}
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginBottom: '0.2rem' }}>{name||'Your Name'}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#8497ce' }}>{role||'Role'}</div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.25rem', backdropFilter: 'blur(10px)' }}>
+                      <div style={{ fontSize: '0.65rem', color: '#a2b2e8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.8rem', borderBottom: '1px solid rgba(162,178,232,0.2)', paddingBottom: '0.3rem' }}>Experience</div>
+                      {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.5rem', borderLeft: '1px solid rgba(162,178,232,0.3)', paddingLeft: '0.5rem' }}><div style={{ fontSize: '0.55rem', color: '#8497ce' }}>{e.date}</div><div style={{ fontSize: '0.75rem', color: '#e4eaf5' }}>{e.title}</div></div>)}
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.25rem', backdropFilter: 'blur(10px)' }}>
+                      <div style={{ fontSize: '0.65rem', color: '#a2b2e8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.8rem', borderBottom: '1px solid rgba(162,178,232,0.2)', paddingBottom: '0.3rem' }}>Skills</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <span key={i} style={{ background: 'rgba(162,178,232,0.1)', color: '#c4d0eb', fontSize: '0.6rem', padding: '0.2rem 0.5rem', borderRadius: '100px' }}>{s}</span>)}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : template === 'paper' ? (
+              <div style={{ background: '#fcfbf8', borderRadius: '12px', overflow: 'hidden', zoom: 0.65, padding: '2rem', border: '1px solid #ddd', fontFamily: "'Georgia', serif", color: '#222' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  {photoUrl && <img src={photoUrl} alt="p" style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '50%', marginBottom: '1rem', filter: 'grayscale(100%)' }} />}
+                  <div style={{ fontSize: '2rem', color: '#111', marginBottom: '0.3rem' }}>{name||'Firstname Lastname'}</div>
+                  <div style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#555' }}>{role||'Professional Title'}</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#800000', textTransform: 'uppercase', borderBottom: '1px solid #ccc', paddingBottom: '0.3rem', marginBottom: '0.8rem' }}>Experience</div>
+                    {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem' }}><div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{e.title}</div><div style={{ fontSize: '0.65rem', fontStyle: 'italic', color: '#666' }}>{e.date}</div></div>)}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#800000', textTransform: 'uppercase', borderBottom: '1px solid #ccc', paddingBottom: '0.3rem', marginBottom: '0.8rem' }}>Education</div>
+                    {education.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem' }}><div style={{ fontSize: '0.85rem' }}>{e.title}</div><div style={{ fontSize: '0.65rem', fontStyle: 'italic', color: '#666' }}>{e.date}</div></div>)}
+                  </div>
                 </div>
               </div>
             ) : (

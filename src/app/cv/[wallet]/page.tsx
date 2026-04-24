@@ -22,6 +22,5 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
 export default async function CVPage({ params, searchParams }: Props) {
   const { wallet } = await params;
-  const { gh } = await searchParams;
-  return <CVPageClient wallet={wallet} githubUsername={gh} />;
+  return <CVPageClient wallet={wallet} />;
 }
