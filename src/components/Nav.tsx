@@ -30,13 +30,22 @@ export default function Nav() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <WalletMultiButton style={{ height: '36px', fontSize: '0.82rem', padding: '0 1rem', background: '#2a2a2a' }} />
             {session?.user && (
-              <Link
-                href="/builder"
-                className="btn btn-primary"
-                style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}
-              >
-                Go to Builder
-              </Link>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Link
+                  href="/profile"
+                  className="btn btn-outline"
+                  style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}
+                >
+                  My Identities
+                </Link>
+                <Link
+                  href="/builder"
+                  className="btn btn-primary"
+                  style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}
+                >
+                  Go to Builder
+                </Link>
+              </div>
             )}
           </div>
         </div>

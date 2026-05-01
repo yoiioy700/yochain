@@ -103,7 +103,7 @@ export default function BuilderPage() {
   const [certsLine, setCertsLine] = useState('');
   const [twitterHandle, setTwitterHandle] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
-  const [evmAddress, setEvmAddress] = useState('');
+
   const [solAddress, setSolAddress] = useState('');
   const [available, setAvailable] = useState(false);
   const [template, setTemplate] = useState('default');
@@ -131,7 +131,7 @@ export default function BuilderPage() {
       proj: serializeProjects(projects),
       skl: skillsLine, lang: languagesLine, cert: certsLine,
       tw: twitterHandle, web: websiteUrl,
-      evm: evmAddress, sol: solAddress,
+      sol: solAddress,
       avail: available ? '1' : '0',
       tmpl: template,
       gh: (session as any)?.githubUsername || session?.user?.name || ''
@@ -319,10 +319,7 @@ export default function BuilderPage() {
                   <label className="form-label">Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score)</span></label>
                   <input type="text" className="form-input" placeholder="5zi..." value={solAddress} onChange={e => setSolAddress(e.target.value)} />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">EVM Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Multichain Score)</span></label>
-                  <input type="text" className="form-input" placeholder="0x..." value={evmAddress} onChange={e => setEvmAddress(e.target.value)} />
-                </div>
+
               </div>
             )}
 

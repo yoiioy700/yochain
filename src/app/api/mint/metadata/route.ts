@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const urlObj = new URL(req.url);
+  const { searchParams, origin } = urlObj;
   const name = searchParams.get('n') || 'YoChain User';
   const role = searchParams.get('r') || 'Web3 Professional';
-  const photo = searchParams.get('p') || 'https://yochain.io/default-avatar.png';
+  let photo = searchParams.get('p') || 'https://yochain.io/default-avatar.png';
+  if (photo.startsWith('/')) {
+    photo = `${origin}${photo}`;
+  }
 
   const metadata = {
     name: `YoChain ID: ${name}`,

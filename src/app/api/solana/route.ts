@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   let targetWallet = wallet;
   let domainName: string | null = null;
-  const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
+  const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.devnet.solana.com';
   const rpcConnection = new Connection(rpcUrl, 'confirmed');
 
   if (wallet.toLowerCase().endsWith('.sol')) {
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       // Run in parallel: balance, token accounts, enriched tx history, and signatures from RPC
       const [balanceRes, tokenRes, txRes, signatures] = await Promise.all([
         // SOL Balance via Helius RPC
-        fetch(`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, {
+        fetch(`https://devnet.helius-rpc.com/?api-key=${heliusKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [targetWallet] }),
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
         }).then(r => r.json()),
 
         // Token holdings via Helius RPC
-        fetch(`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, {
+        fetch(`https://devnet.helius-rpc.com/?api-key=${heliusKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

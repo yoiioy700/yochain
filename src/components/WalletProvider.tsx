@@ -13,8 +13,8 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 interface Props { children: ReactNode; }
 
 export const WalletContextProvider: FC<Props> = ({ children }) => {
-  const network = WalletAdapterNetwork.Mainnet;
-  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
+  const network = WalletAdapterNetwork.Devnet;
+  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.devnet.solana.com';
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
     []

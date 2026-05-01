@@ -5,9 +5,9 @@ import Nav from '@/components/Nav';
 import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { create } from '@metaplex-foundation/mpl-core';
+import { create, update } from '@metaplex-foundation/mpl-core';
 import { walletAdapterIdentity } from '@metaplex-foundation/umi-signer-wallet-adapters';
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey as umiPublicKey } from '@metaplex-foundation/umi';
 
 function shortAddr(a: string) { return a ? `${a.slice(0,6)}...${a.slice(-6)}` : ''; }
 
@@ -20,11 +20,11 @@ interface ProjectEntry { name: string; desc: string; url: string; tech: string; 
 interface CVData {
   p:string; n:string; r:string; b:string; e:string;
   edu:string; exp:string; skl:string; proj?:string; lang?:string; cert?:string;
-  tw:string; web:string; gh:string; sol?:string; evm?:string; avail?:string; tmpl?:string;
+  tw:string; web:string; gh:string; sol?:string; avail?:string; tmpl?:string;
 }
 
 type TmplProps = {
-  data: CVData; ghData:any; solData:any; evmData:any;
+  data: CVData; ghData:any; solData:any;
   projects: ProjectEntry[]; parseList:(s?:string)=>string[];
   reputationScore:string; wallet:string; isDark:boolean; c:(d:string,l:string)=>string;
 };
@@ -519,7 +519,6 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
   const [data, setData]       = useState<CVData|null>(null);
   const [solData, setSolData] = useState<any>(null);
   const [ghData, setGhData]   = useState<any>(null);
-  const [evmData, setEvmData] = useState<any>(null);
   const [isLoadingScore, setIsLoadingScore] = useState(true);
   
   const walletAdapter = useWallet();
@@ -533,19 +532,45 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
     try {
       setIsMinting(true);
-      const umi = createUmi(process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.mainnet-beta.solana.com')
-        .use(walletAdapterIdentity(walletAdapter));
+      const rpc = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.devnet.solana.com';
+      
+      // 1. Check if user already has an identity
+      const response = await fetch(rpc, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 'yochain-check',
+          method: 'getAssetsByOwner',
+          params: { ownerAddress: walletAdapter.publicKey.toBase58(), page: 1, limit: 100 }
+        })
+      });
+      const dasData = await response.json();
+      const assets = dasData.result?.items || [];
+      const existingYoChain = assets.find((a: any) => a.content?.metadata?.name?.startsWith('YoChain ID'));
 
-      const asset = generateSigner(umi);
+      const umi = createUmi(rpc).use(walletAdapterIdentity(walletAdapter));
       const uri = `${window.location.origin}/api/mint/metadata?n=${encodeURIComponent(data?.n || '')}&r=${encodeURIComponent(data?.r || '')}&p=${encodeURIComponent(data?.p || '')}`;
+      const name = `YoChain ID: ${data?.n || 'User'}`;
 
-      await create(umi, {
-        asset,
-        name: `YoChain ID: ${data?.n || 'User'}`,
-        uri: uri,
-      }).sendAndConfirm(umi);
-
-      alert(`Identity Minted successfully! Check your wallet for the NFT.\nAddress: ${asset.publicKey.toString()}`);
+      if (existingYoChain) {
+        // Update existing identity
+        await update(umi, {
+          asset: umiPublicKey(existingYoChain.id),
+          name: name,
+          uri: uri,
+        }).sendAndConfirm(umi);
+        alert(`Identity Updated successfully!`);
+      } else {
+        // Create new identity
+        const asset = generateSigner(umi);
+        await create(umi, {
+          asset,
+          name: name,
+          uri: uri,
+        }).sendAndConfirm(umi);
+        alert(`Identity Minted successfully! Check your wallet for the NFT.\nAddress: ${asset.publicKey.toString()}`);
+      }
     } catch (err: any) {
       console.error(err);
       alert(`Failed to mint identity: ${err.message}`);
@@ -591,10 +616,6 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       const promises = [];
       if(decoded.gh) promises.push(fetch(`/api/github?username=${decoded.gh}`).then(r=>r.json()).then(setGhData).catch(console.error));
       if(decoded.sol) promises.push(fetch(`/api/solana?wallet=${decoded.sol}`).then(r=>r.json()).then(setSolData).catch(console.error));
-      // Now uses server-side /api/evm for proper multi-chain support + Covalent
-      if(decoded.evm?.startsWith('0x') && decoded.evm.length >= 40) {
-        promises.push(fetch(`/api/evm?address=${decoded.evm}`).then(r=>r.json()).then(setEvmData).catch(console.error));
-      }
       
       Promise.allSettled(promises).then(() => setIsLoadingScore(false));
     }catch(e){console.error(e); setIsLoadingScore(false);}
@@ -610,15 +631,13 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
     (solData?.swapCount||0) * 5 +
     (solData?.nftCount||0) * 3 +
     (solData?.tokenCount||0) * 2 +
-    (evmData?.txCount||0) * 0.05 +
-    ((evmData?.chains?.length||0)) * 20 +
     (ghData?.stats?.totalStars||0) * 2 +
     (ghData?.user?.publicRepos||0) * 1 +
     (data.tw ? 50 : 0)
   ).toFixed(0);
 
   const tmpl = data.tmpl || 'default';
-  const tmplProps: TmplProps = {data,ghData,solData,evmData,projects,parseList,reputationScore,wallet,isDark,c};
+  const tmplProps: TmplProps = {data,ghData,solData,projects,parseList,reputationScore,wallet,isDark,c};
   const isSpecialTemplate = ['cyber','minimal','modern','brutalist','glass','paper','solana'].includes(tmpl);
 
   return (

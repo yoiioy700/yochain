@@ -101,7 +101,7 @@ export const POST = async (
     const targetWallet = new PublicKey(wallet);
 
     const connection = new Connection(
-      process.env.NEXT_PUBLIC_SOLANA_RPC || clusterApiUrl("mainnet-beta"),
+      process.env.NEXT_PUBLIC_SOLANA_RPC || clusterApiUrl("devnet"),
       "confirmed"
     );
 
