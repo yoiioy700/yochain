@@ -106,7 +106,8 @@ export default function BuilderPage() {
 
   const [solAddress, setSolAddress] = useState('');
   const [available, setAvailable] = useState(false);
-  const [template, setTemplate] = useState('default');
+  const [focus, setFocus] = useState('');
+  const [ecosystemsLine, setEcosystemsLine] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -130,10 +131,10 @@ export default function BuilderPage() {
       exp: serializeEntries(experience),
       proj: serializeProjects(projects),
       skl: skillsLine, lang: languagesLine, cert: certsLine,
+      eco: ecosystemsLine, foc: focus,
       tw: twitterHandle, web: websiteUrl,
       sol: solAddress,
       avail: available ? '1' : '0',
-      tmpl: template,
       gh: (session as any)?.githubUsername || session?.user?.name || ''
     };
     return Buffer.from(JSON.stringify(dataObj)).toString('base64');
@@ -142,10 +143,44 @@ export default function BuilderPage() {
   const cvUsername = (session as any)?.githubUsername || session?.user?.name || 'anonymous';
   const cvUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/cv/${cvUsername}?d=${getEncodedData()}`;
 
+  const saveProfile = async () => {
+    try {
+      const reputationScore = (
+        (skillsLine.split(',').filter(Boolean).length) * 5 +
+        (twitterHandle ? 50 : 0) +
+        (solAddress ? 30 : 0) +
+        (experience.filter(e => e.title).length * 10) +
+        (projects.filter(p => p.name).length * 20)
+      );
+      await fetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: cvUsername,
+          name,
+          role,
+          photo: photoUrl,
+          ecosystems: ecosystemsLine.split(',').map(s => s.trim()).filter(Boolean),
+          focus,
+          available,
+          score: reputationScore,
+          gh: (session as any)?.githubUsername || session?.user?.name || '',
+          tw: twitterHandle,
+          sol: solAddress,
+          profileUrl: cvUrl,
+          savedAt: new Date().toISOString(),
+        }),
+      });
+    } catch (err) {
+      console.error('Failed to save profile', err);
+    }
+  };
+
   const copyLink = () => {
     navigator.clipboard.writeText(cvUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    saveProfile();
   };
 
   if (status === 'loading') return <div style={{ textAlign: 'center', marginTop: '4rem', color: 'var(--text-muted)' }}>Authenticating...</div>;
@@ -167,61 +202,33 @@ export default function BuilderPage() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
 
             {/* Tab Navigation */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
               {[
                 { id: 0, label: 'PROFILE' },
                 { id: 1, label: 'BACKGROUND' },
                 { id: 2, label: 'PROJECTS' },
                 { id: 3, label: 'CONTACT' },
-                { id: 4, label: 'TEMPLATE' },
               ].map(tab => (
                 <div key={tab.id} onClick={() => setActiveTab(tab.id)}
                   style={{ padding: '0.75rem 0.5rem', cursor: 'pointer', textAlign: 'center',
                     background: activeTab === tab.id ? '#0f0f0f' : '#0a0a0a',
-                    borderBottom: activeTab === tab.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                    borderBottom: activeTab === tab.id ? '2px solid #14F195' : '2px solid transparent',
                     transition: 'all 0.15s' }}>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '1px', color: activeTab === tab.id ? 'var(--accent-orange)' : '#666' }}>{tab.label}</div>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '1px', color: activeTab === tab.id ? '#14F195' : '#666' }}>{tab.label}</div>
                 </div>
               ))}
             </div>
-
-            {/* Tab 4: Template */}
-            {activeTab === 4 && (
-              <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border-color)', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
-                  {[
-                    { id: 'default', label: 'DEFAULT', desc: 'Dark magazine' },
-                    { id: 'cyber',   label: 'CYBER',   desc: 'Neon green + dark' },
-                    { id: 'minimal', label: 'MINIMAL',  desc: 'Clean white + BW' },
-                    { id: 'modern',  label: 'MODERN',   desc: 'Red accent + bold' },
-                    { id: 'brutalist', label: 'BRUTALIST', desc: 'Neo-brutalism + yellow' },
-                    { id: 'glass',   label: 'GLASS',    desc: 'DeFi ethereal glow' },
-                    { id: 'paper',   label: 'PAPER',    desc: 'Scholar serif + textured' },
-                    { id: 'solana',  label: 'SOLANA',   desc: 'Premium Web3 Glass' },
-                  ].map(t => (
-                    <div key={t.id} onClick={() => setTemplate(t.id)}
-                      style={{ padding: '1.25rem 1rem', cursor: 'pointer',
-                        background: template === t.id ? '#0f0f0f' : '#0a0a0a',
-                        borderBottom: template === t.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
-                        transition: 'all 0.2s' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem', letterSpacing: '1px', color: template === t.id ? 'var(--accent-orange)' : '#888' }}>{t.label}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', textTransform: 'uppercase' }}>{t.desc}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Tab 0: Profile */}
             {activeTab === 0 && (
               <div>
                 {/* Available toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: '#0a0a0a', border: '1px solid var(--border-color)', borderLeft: available ? '4px solid var(--accent-orange)' : '4px solid #333', cursor: 'pointer', transition: 'all 0.2s' }}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: '#0a0a0a', border: '1px solid var(--border-color)', borderLeft: available ? '4px solid #14F195' : '4px solid #333', cursor: 'pointer', transition: 'all 0.2s' }}
                   onClick={() => setAvailable(v => !v)}>
-                  <div style={{ width: '40px', height: '22px', background: available ? 'var(--accent-orange)' : '#222', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-                    <div style={{ width: '14px', height: '14px', background: '#fff', position: 'absolute', top: '4px', left: available ? '22px' : '4px', transition: 'left 0.2s' }} />
+                  <div style={{ width: '40px', height: '22px', background: available ? '#14F195' : '#222', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                    <div style={{ width: '14px', height: '14px', background: '#000', position: 'absolute', top: '4px', left: available ? '22px' : '4px', transition: 'left 0.2s' }} />
                   </div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: available ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: available ? '#14F195' : 'var(--text-muted)' }}>
                     {available ? 'Available for Work' : 'Not Available'}
                   </span>
                 </div>
@@ -261,6 +268,17 @@ export default function BuilderPage() {
                   <input type="text" className="form-input" placeholder="e.g. Full Stack Developer" value={role} onChange={e => setRole(e.target.value)} />
                 </div>
                 <div className="form-group">
+                  <label className="form-label">Current Focus</label>
+                  <select className="form-input" value={focus} onChange={e => setFocus(e.target.value)} style={{ padding: '0.75rem', fontSize: '0.85rem' }}>
+                    <option value="">-- Select Focus --</option>
+                    <option value="Building New Project">Building New Project</option>
+                    <option value="Looking for Co-founder">Looking for Co-founder</option>
+                    <option value="Raising Seed/Grants">Raising Seed/Grants</option>
+                    <option value="Exploring Opportunities">Exploring Opportunities</option>
+                    <option value="Open for Hire">Open for Hire</option>
+                  </select>
+                </div>
+                <div className="form-group">
                   <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>Bio</span>
                     <span style={{ color: bio.length > 260 ? 'var(--accent-orange)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{bio.length}/300</span>
@@ -281,6 +299,10 @@ export default function BuilderPage() {
                 <div className="form-group">
                   <label className="form-label">Skills (Comma Separated)</label>
                   <textarea className="form-input" placeholder="Photoshop, Next.js, Solana..." value={skillsLine} onChange={e => setSkillsLine(e.target.value)} style={{ minHeight: '80px' }} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Ecosystems (Comma Separated)</label>
+                  <input type="text" className="form-input" placeholder="Solana, Superteam, Base..." value={ecosystemsLine} onChange={e => setEcosystemsLine(e.target.value)} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Languages</label>
@@ -316,7 +338,7 @@ export default function BuilderPage() {
                   <input type="text" className="form-input" placeholder="https://..." value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score)</span></label>
+                  <label className="form-label">Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score & SNS)</span></label>
                   <input type="text" className="form-input" placeholder="5zi..." value={solAddress} onChange={e => setSolAddress(e.target.value)} />
                 </div>
 
@@ -330,13 +352,13 @@ export default function BuilderPage() {
                 style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, opacity: activeTab === 0 ? 0.3 : 1, pointerEvents: activeTab === 0 ? 'none' : 'auto' }}>
                 ← PREV
               </button>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'center', letterSpacing: '1px' }}>{activeTab + 1} / 5</span>
-              {activeTab === 4 ? (
-                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0 }}>
-                  View Full CV + Mint Identity →
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'center', letterSpacing: '1px' }}>{activeTab + 1} / 4</span>
+              {activeTab === 3 ? (
+                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" onClick={() => saveProfile()} className="btn" style={{ background: '#14F195', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, textTransform: 'uppercase' }}>
+                  View Profile & Mint ↗
                 </Link>
               ) : (
-                <button onClick={() => setActiveTab(t => Math.min(4, t + 1))}
+                <button onClick={() => setActiveTab(t => Math.min(3, t + 1))}
                   className="btn btn-outline"
                   style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0 }}>
                   NEXT →
@@ -349,13 +371,13 @@ export default function BuilderPage() {
           {/* ── Right: Live Preview ── */}
           <div style={{ position: 'sticky', top: '76px' }}>
             {/* Publish Section (Moved here to be always accessible) */}
-            <div className="builder-panel" style={{ background: 'rgba(244, 106, 42, 0.05)', borderColor: 'var(--accent-orange)', marginBottom: '1rem', padding: '1rem' }}>
-              <h3 style={{ marginBottom: '0.5rem', color: 'var(--accent-orange)', fontSize: '1.1rem' }}>Share Your Profile</h3>
+            <div className="builder-panel" style={{ background: 'rgba(20, 241, 149, 0.05)', borderColor: '#14F195', marginBottom: '1rem', padding: '1rem' }}>
+              <h3 style={{ marginBottom: '0.5rem', color: '#14F195', fontSize: '1.1rem' }}>Share Your Profile</h3>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
                 <strong>Blink Ready:</strong> Paste your link on X (Twitter) to let people tip you SOL directly!
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button className="btn btn-primary" onClick={copyLink} style={{ flex: 1, padding: '0.5rem' }}>
+                <button className="btn" onClick={copyLink} style={{ flex: 1, padding: '0.5rem', background: '#14F195', color: '#000', fontWeight: 700, border: 'none' }}>
                   {copied ? 'Link Copied!' : 'Copy Share Link'}
                 </button>
               </div>
@@ -363,230 +385,68 @@ export default function BuilderPage() {
 
             <p className="form-label" style={{ marginBottom: '0.75rem' }}>Live Preview</p>
 
-            {template === 'cyber' ? (
-              <div style={{ background: '#0a0a0a', borderRadius: '12px', padding: '1.25rem', border: '1px solid #00ff4133', zoom: 0.65 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '140px 4px 1fr', gap: '0', minHeight: '300px' }}>
-                  <div style={{ background: '#111', padding: '1rem', borderRadius: '8px 0 0 8px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '6px', filter: 'grayscale(100%)', border: '2px solid #00ff41' }} /> : <div style={{ width: '100%', aspectRatio: '1', background: '#1a1a1a', borderRadius: '6px', border: '2px solid #00ff41' }} />}
-                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{(name||'YOUR NAME').split(' ').map((w,i) => <div key={i}><span style={{ color: '#00ff41' }}>{w[0]}</span>{w.slice(1)}</div>)}</div>
-                    <div style={{ color: '#00ff41', fontSize: '0.65rem', textTransform: 'uppercase' }}>{role||'Role'}</div>
-                    {available && <div style={{ background: '#00ff4122', border: '1px solid #00ff41', color: '#00ff41', padding: '0.2rem 0.5rem', borderRadius: '100px', fontSize: '0.6rem', fontWeight: 700 }}>⚡ OPEN TO WORK</div>}
-                    <div style={{ fontSize: '0.62rem', color: '#555' }}>✉ {email||'email'}</div>
-                  </div>
-                  <div style={{ background: 'linear-gradient(to bottom, transparent, #00ff41, transparent)', width: '2px', boxShadow: '0 0 8px #00ff41' }} />
-                  <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {bio && <p style={{ color: '#777', fontSize: '0.7rem', lineHeight: 1.6, borderLeft: '3px solid #00ff41', paddingLeft: '0.5rem' }}>{bio.slice(0,80)}</p>}
-                    <div><div style={{ color: '#00ff41', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Experience</div>{experience.filter(e=>e.date||e.title).map((exp,i) => <div key={i} style={{ borderLeft: '1px solid #00ff4133', paddingLeft: '0.5rem', marginBottom: '0.4rem' }}><div style={{ color: '#00ff41', fontSize: '0.58rem' }}>{exp.date}</div><div style={{ color: '#e0e0e0', fontSize: '0.65rem', fontWeight: 600 }}>{exp.title}</div></div>)}</div>
-                    <div><div style={{ color: '#00ff41', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Skills</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid #00ff41', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.45rem', color: '#00ff41', fontWeight: 700 }}>{s.slice(0,2).toUpperCase()}</div>)}</div></div>
-                  </div>
-                </div>
-              </div>
-            ) : template === 'minimal' ? (
-              <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e0e0e0', overflow: 'hidden', zoom: 0.65 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', minHeight: '300px' }}>
-                  <div style={{ borderRight: '1px solid #eee', padding: '1rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', background: '#fff' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#111', lineHeight: 1.1 }}>{name||'YOUR NAME'}</div>
-                    <div style={{ width: '20px', height: '2px', background: '#111' }} />
-                    <div style={{ fontSize: '0.58rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{role||'Role'}</div>
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', filter: 'grayscale(100%)' }} /> : <div style={{ width: '100%', aspectRatio: '3/4', background: '#f0f0f0' }} />}
-                    {bio && <p style={{ fontSize: '0.58rem', color: '#555', lineHeight: 1.5 }}>{bio.slice(0,70)}</p>}
-                    <div style={{ fontSize: '0.55rem', color: '#555' }}>{email && <div>✉ {email}</div>}{twitterHandle && <div>𝕏 @{twitterHandle}</div>}</div>
-                  </div>
-                  <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#fff' }}>
-                    <div><div style={{ fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#111', marginBottom: '0.4rem' }}>Education</div>{education.filter(e=>e.date||e.title).map((edu,i) => <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 14px 1fr', gap: 0, marginBottom: '0.35rem', alignItems: 'start' }}><div style={{ fontSize: '0.5rem', color: '#888', textAlign: 'right', paddingRight: '6px', paddingTop: '2px' }}>{edu.date}</div><div style={{ width: '9px', height: '9px', borderRadius: '50%', border: '2px solid #222', flexShrink: 0 }} /><div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#111', paddingLeft: '5px' }}>{edu.title}</div></div>)}</div>
-                    <div><div style={{ fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#111', marginBottom: '0.4rem' }}>Experience</div>{experience.filter(e=>e.date||e.title).map((exp,i) => <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 14px 1fr', gap: 0, marginBottom: '0.35rem', alignItems: 'start' }}><div style={{ fontSize: '0.5rem', color: '#888', textAlign: 'right', paddingRight: '6px', paddingTop: '2px' }}>{exp.date}</div><div style={{ width: '9px', height: '9px', borderRadius: '50%', border: '2px solid #222', flexShrink: 0 }} /><div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#111', paddingLeft: '5px' }}>{exp.title}</div></div>)}</div>
-                    <div><div style={{ fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#111', marginBottom: '0.4rem' }}>Skills</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid #222', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.45rem', fontWeight: 800, color: '#111' }}>{s.slice(0,2).toUpperCase()}</div>)}</div></div>
-                  </div>
-                </div>
-              </div>
-            ) : template === 'modern' ? (
-              <div style={{ background: '#fafafa', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e8e8e8', zoom: 0.65, position: 'relative' }}>
-                {/* Diagonal stripes background pattern */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.03, pointerEvents: 'none', background: 'repeating-linear-gradient(45deg, #000, #000 2px, transparent 2px, transparent 10px)' }} />
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px', background: '#fff', borderBottom: '3px solid #e63329', position: 'relative', zIndex: 1 }}>
-                  <div style={{ padding: '1.5rem 1rem 1.5rem 2rem', borderLeft: '8px solid #e63329' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.2rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px' }}>Profile</div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#111', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '0.2rem' }}>{name||'Your Name'}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#e63329', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>{role||'Role'}</div>
-                    {bio && <p style={{ fontSize: '0.7rem', color: '#555', lineHeight: 1.6, marginBottom: '0.8rem' }}>{bio.slice(0,100)}</p>}
-                    <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', fontSize: '0.65rem', color: '#666', fontWeight: 500 }}>
-                      {email && <span style={{ background: '#f5f5f5', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>📧 {email}</span>}
-                      {twitterHandle && <span style={{ background: '#f5f5f5', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>𝕏 @{twitterHandle}</span>}
-                    </div>
-                    {available && <div style={{ marginTop: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#e63329', color: '#fff', padding: '0.25rem 0.6rem', borderRadius: '4px', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff' }} /> Available for Hire</div>}
-                  </div>
-                  <div style={{ position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: 0, right: 0, width: '40px', height: '40px', background: '#e63329', clipPath: 'polygon(0 0, 100% 0, 100% 100%)', zIndex: 2 }} />
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block', filter: 'contrast(1.1)' }} /> : <div style={{ width: '100%', height: '100%', background: '#eee' }} />}
-                  </div>
-                </div>
-                
-                <div style={{ padding: '1.25rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ background: '#000000', border: '1px solid #333', overflow: 'hidden', zoom: 0.65, position: 'relative' }}>
+              <style dangerouslySetInnerHTML={{__html:`
+                @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+              `}}/>
+              {/* Noise Texture */}
+              <div style={{position:'absolute', inset:0, background:'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'1.5\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")', opacity:0.06, mixBlendMode:'screen', zIndex:1, pointerEvents:'none'}}/>
+              
+              <div style={{position:'absolute', top:0, right:0, width:'50vw', height:'2px', background:'linear-gradient(90deg, transparent, #14F195)', zIndex:2}}/>
+
+              <div style={{ position: 'relative', zIndex: 2, padding: '3rem', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+                  {photoUrl ? (
+                    <img src={photoUrl} alt="profile" style={{ width: '80px', height: '80px', objectFit: 'cover', border: '1px solid #333', filter: 'grayscale(100%) contrast(1.2)' }} />
+                  ) : (
+                    <div style={{ width: '80px', height: '80px', background: '#111', border: '1px solid #333' }} />
+                  )}
+                  <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, color: '#fff', margin: 0, textTransform: 'uppercase', lineHeight: 0.9, letterSpacing: '-0.04em' }}>{name || 'NATIVE BUILDER'}</h2>
+                  <div style={{ fontSize: '1.2rem', color: '#888', marginTop: '0.5rem' }}>{role || 'WEB3 DEVELOPER'}</div>
                   
-                  {/* Experience Cards */}
-                  <div>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#111', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}><span style={{ width: '12px', height: '3px', background: '#e63329', display: 'inline-block' }}/>Experience</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {experience.filter(e=>e.title).map((e,i) => (
-                        <div key={i} style={{ background: '#fff', border: '1px solid #eee', borderRadius: '6px', padding: '0.6rem 0.8rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-                          <div style={{ fontSize: '0.55rem', color: '#fff', background: '#111', display: 'inline-block', padding: '0.15rem 0.4rem', borderRadius: '3px', fontWeight: 700, marginBottom: '0.3rem' }}>{e.date}</div>
-                          <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#222' }}>{e.title}</div>
-                        </div>
+                  {/* Ecosystems Badges in Preview */}
+                  {ecosystemsLine && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+                      {ecosystemsLine.split(',').map((eco, i) => eco.trim() && (
+                        <span key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: '#14F195', border: '1px solid #14F195', padding: '0.2rem 0.5rem', background: 'rgba(20, 241, 149, 0.1)', borderRadius: '4px' }}>
+                          ✦ {eco.trim()}
+                        </span>
                       ))}
                     </div>
-                  </div>
-                  
-                  {/* Star-rated Skills & Education */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#111', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}><span style={{ width: '12px', height: '3px', background: '#e63329', display: 'inline-block' }}/>Skills</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                        {parseList(skillsLine).map((s,i) => {
-                          const stars = 5 - (i % 3);
-                          return (
-                            <div key={i} style={{ background: '#fff', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ fontSize: '0.6rem', color: '#111', fontWeight: 700 }}>{s}</div>
-                              <div style={{ color: '#e63329', fontSize: '0.5rem', letterSpacing: '1px' }}>
-                                {'★'.repeat(stars)}{'☆'.repeat(5-stars)}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#111', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}><span style={{ width: '12px', height: '3px', background: '#e63329', display: 'inline-block' }}/>Education</div>
-                      {education.filter(e=>e.title).map((e,i) => (
-                        <div key={i} style={{ marginBottom: '0.4rem', position: 'relative', paddingLeft: '0.6rem', borderLeft: '2px solid #ddd' }}>
-                          <div style={{ fontSize: '0.5rem', color: '#e63329', fontWeight: 800 }}>{e.date}</div>
-                          <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#333' }}>{e.title}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
+                  )}
+
+                  {focus && <div style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: '#9945FF', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem', border: '1px solid #9945FF', padding: '0.5rem 1rem', display: 'inline-block', width: 'fit-content' }}>🎯 {focus}</div>}
+                  {available && !focus && <div style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: '#14F195', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem' }}>AVAILABLE_FOR_WORK</div>}
                 </div>
-              </div>
-            ) : template === 'brutalist' ? (
-              <div style={{ background: '#ffde00', borderRadius: '12px', border: '4px solid #000', boxShadow: '6px 6px 0 #000', overflow: 'hidden', zoom: 0.65, padding: '1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', borderBottom: '3px solid #000', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <div style={{ background: '#000', color: '#fff', display: 'inline-block', padding: '0.2rem 0.5rem', fontWeight: 800, fontSize: '0.6rem', transform: 'rotate(-2deg)', marginBottom: '0.5rem' }}>Web3 Native</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1 }}>{name||'YOUR NAME'}</div>
-                    <div style={{ background: '#ff61d8', border: '2px solid #000', display: 'inline-block', padding: '0.2rem 0.5rem', fontWeight: 700, fontSize: '0.8rem', marginTop: '0.5rem' }}>{role||'ROLE'}</div>
-                  </div>
-                  {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '80px', height: '80px', objectFit: 'cover', border: '3px solid #000', boxShadow: '4px 4px 0 #000', background:'#fff' }} /> : <div style={{ width: '80px', height: '80px', background: '#000' }} />}
-                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div style={{ background: '#fff', border: '3px solid #000', padding: '1rem', boxShadow: '4px 4px 0 #000' }}>
-                    <div style={{ fontWeight: 900, borderBottom: '2px solid #000', marginBottom: '0.5rem' }}>EXPERIENCE</div>
-                    {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.5rem' }}><div style={{ background: '#000', color: '#fff', fontSize: '0.5rem', display: 'inline-block', padding: '0.1rem 0.3rem', fontWeight: 800 }}>{e.date}</div><div style={{ fontWeight: 800, fontSize: '0.8rem' }}>{e.title}</div></div>)}
+                  <div style={{ background: 'rgba(10,10,10,0.5)', padding: '1.5rem', border: '1px solid #333' }}>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#9945FF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>// EXPERIENCE</div>
+                    {experience.filter(e => e.title).map((e, i) => (
+                      <div key={i} style={{ marginBottom: '1rem', borderLeft: '1px solid #333', paddingLeft: '1rem', position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '-3px', top: '0', width: '5px', height: '5px', background: '#9945FF' }} />
+                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: '#888', marginBottom: '0.2rem' }}>{e.date}</div>
+                        <div style={{ fontSize: '1rem', color: '#fff', fontWeight: 500 }}>{e.title}</div>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ background: '#00ffff', border: '3px solid #000', padding: '1rem', boxShadow: '4px 4px 0 #000' }}>
-                      <div style={{ fontWeight: 900, borderBottom: '2px solid #000', marginBottom: '0.5rem' }}>SKILLS</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <span key={i} style={{ background: '#fff', border: '2px solid #000', padding: '0.2rem 0.4rem', fontSize: '0.6rem', fontWeight: 800 }}>{s}</span>)}</div>
+                  <div style={{ background: 'rgba(10,10,10,0.5)', padding: '1.5rem', border: '1px solid #333' }}>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#14F195', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>// CAPABILITIES</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {skillsLine.split(',').slice(0,4).map((s, i) => s.trim() && (
+                        <span key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#fff', border: '1px solid #333', padding: '0.3rem 0.6rem', background: '#050505' }}>
+                          {s.trim()}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
-            ) : template === 'glass' ? (
-              <div style={{ background: '#020205', overflow: 'hidden', zoom: 0.65, padding: '1.5rem', position: 'relative', border: '1px solid #222' }}>
-                <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '100%', height: '100%', background: 'radial-gradient(ellipse at top left, rgba(153,69,255,0.4) 0%, transparent 60%)', filter: 'blur(30px)', zIndex: 0 }} />
-                <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '100%', height: '100%', background: 'radial-gradient(ellipse at bottom right, rgba(30,136,229,0.3) 0%, transparent 60%)', filter: 'blur(30px)', zIndex: 0 }} />
-                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'center' }}>
-                  <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '50%', marginBottom: '0.5rem', display: 'inline-block', filter: 'grayscale(20%)' }} /> : <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', marginBottom: '0.5rem', display: 'inline-block' }} />}
-                    <div style={{ fontSize: '1.5rem', fontWeight: 400, color: '#fff', marginBottom: '0.2rem', fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic' }}>{name||'Your Name'}</div>
-                    <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>{role||'Role'}</div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', textAlign: 'left' }}>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#fff', marginBottom: '0.5rem', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>Experience</div>
-                      {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.5rem' }}><div style={{ fontSize: '0.6rem', color: '#fff' }}>{e.title}</div><div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{e.date}</div></div>)}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#fff', marginBottom: '0.5rem', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>Capabilities</div>
-                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>{parseList(skillsLine).join(', ')}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : template === 'paper' ? (
-              <div style={{ background: '#fcfbf8', borderRadius: '12px', overflow: 'hidden', zoom: 0.65, padding: '2rem', border: '1px solid #ddd', fontFamily: "'Georgia', serif", color: '#222' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                  {photoUrl && <img src={photoUrl} alt="p" style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '50%', marginBottom: '1rem', filter: 'grayscale(100%)' }} />}
-                  <div style={{ fontSize: '2rem', color: '#111', marginBottom: '0.3rem' }}>{name||'Firstname Lastname'}</div>
-                  <div style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#555' }}>{role||'Professional Title'}</div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#800000', textTransform: 'uppercase', borderBottom: '1px solid #ccc', paddingBottom: '0.3rem', marginBottom: '0.8rem' }}>Experience</div>
-                    {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem' }}><div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{e.title}</div><div style={{ fontSize: '0.65rem', fontStyle: 'italic', color: '#666' }}>{e.date}</div></div>)}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#800000', textTransform: 'uppercase', borderBottom: '1px solid #ccc', paddingBottom: '0.3rem', marginBottom: '0.8rem' }}>Education</div>
-                    {education.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem' }}><div style={{ fontSize: '0.85rem' }}>{e.title}</div><div style={{ fontSize: '0.65rem', fontStyle: 'italic', color: '#666' }}>{e.date}</div></div>)}
-                  </div>
-                </div>
-              </div>
-            ) : template === 'solana' ? (
-              <div style={{ background: '#000', border: '2px solid #222', overflow: 'hidden', zoom: 0.65, padding: '0', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '12px', height: '12px', borderRight: '2px solid #14F195', borderBottom: '2px solid #14F195' }} />
-                <div style={{ padding: '2rem 1.5rem', borderBottom: '2px solid #222' }}>
-                  <div style={{ fontSize: '0.6rem', color: '#9945FF', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '0.5rem' }}>High-Performance Node</div>
-                  <div style={{ fontSize: '3.5rem', fontWeight: 900, lineHeight: 0.85, letterSpacing: '-0.05em', color: '#14F195', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{name||'NATIVE'}</div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '1rem' }}>{role||'WEB3 DEVELOPER'}</div>
-                  {photoUrl && <img src={photoUrl} alt="p" style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #14F195', filter: 'grayscale(100%) contrast(1.2)', display: 'block' }} />}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                  <div style={{ borderRight: '2px solid #222', padding: '1.5rem', borderBottom: '2px solid #222' }}>
-                    <div style={{ background: '#9945FF', color: '#000', padding: '0.2rem 0.5rem', display: 'inline-block', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem' }}>EXPERIENCE_LOG</div>
-                    {experience.filter(e=>e.title).map((e,i) => <div key={i} style={{ marginBottom: '0.8rem', borderLeft: '2px solid #333', paddingLeft: '0.8rem', position: 'relative' }}><div style={{ position: 'absolute', top: '4px', left: '-5px', width: '8px', height: '8px', background: '#000', border: '2px solid #9945FF' }}/><div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 800 }}>{e.title}</div><div style={{ fontSize: '0.55rem', color: '#14F195', fontWeight: 700 }}>{e.date}</div></div>)}
-                  </div>
-                  <div style={{ padding: '1.5rem', borderBottom: '2px solid #222' }}>
-                    <div style={{ background: '#14F195', color: '#000', padding: '0.2rem 0.5rem', display: 'inline-block', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem' }}>CAPABILITIES</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>{parseList(skillsLine).map((s,i) => <span key={i} style={{ border: '1px solid #14F195', color: '#14F195', fontSize: '0.55rem', padding: '0.2rem 0.4rem', fontWeight: 800 }}>{s}</span>)}</div>
-                  </div>
-                </div>
-                <div style={{ background: '#14F195', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#000', textTransform: 'uppercase' }}>ONCHAIN<br/>SCORE</div>
-                  <div style={{ fontSize: '4rem', fontWeight: 900, color: '#000', lineHeight: 0.8, letterSpacing: '-0.05em' }}>100</div>
-                </div>
-              </div>
-            ) : (
-              <div className="cv-dark-wrapper" style={{ margin: 0, padding: '1.5rem', zoom: 0.65 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ color: 'var(--accent-orange)', fontSize: '1.5rem', fontWeight: 700 }}>{name || 'Your Name'}</div>
-                    <div style={{ color: 'var(--text-muted)' }}>{role || 'Role'}</div>
-                  </div>
-                  {available && <span style={{ background: 'rgba(244,106,42,0.12)', border: '1px solid var(--accent-orange)', color: 'var(--accent-orange)', padding: '0.2rem 0.8rem', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700 }}>⚡ Available</span>}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
-                  <div>
-                    {photoUrl ? <img src={photoUrl} alt="p" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 'var(--radius-lg)', marginBottom: '1rem', border: '4px solid #2a2a2a' }} /> : <div style={{ width: '100%', aspectRatio: '1', background: '#2a2a2a', borderRadius: 'var(--radius-lg)', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>[Photo]</div>}
-                    <div className="section-title">Education</div>
-                    <div className="timeline" style={{ marginBottom: '1.5rem' }}>{education.filter(e => e.date || e.title).map((edu, i) => (<div key={i} className="timeline-item" style={{ paddingBottom: '0.75rem' }}><div className="timeline-date">{edu.date}</div><div className="timeline-title" style={{ fontSize: '0.85rem' }}>{edu.title}</div></div>))}</div>
-                    <div className="section-title">Skills</div>
-                    <div className="skill-list">{parseList(skillsLine).map((s, i) => <div key={i} className="skill-item">{s}</div>)}</div>
-                  </div>
-                  <div>
-                    <div className="cv-hello" style={{ fontSize: '3.5rem', letterSpacing: '-1px', marginBottom: '1rem' }}>HELLO<span>!</span></div>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>{bio || 'Your bio...'}</p>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>{email && <div className="cv-contact-btn" style={{ fontSize: '0.8rem' }}>{email}</div>}{twitterHandle && <div className="cv-contact-btn" style={{ background: '#2a2a2a', fontSize: '0.8rem' }}>@{twitterHandle}</div>}</div>
-                    <div className="section-title">Experience</div>
-                    <div className="timeline">{experience.filter(e => e.date || e.title).map((exp, i) => (<div key={i} className="timeline-item"><div className="timeline-date" style={{ color: 'var(--accent-orange)' }}>{exp.date}</div><div className="timeline-title">{exp.title}</div></div>))}</div>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
+
           </div>
         </div>
       </div>
     </>
   );
-
 }

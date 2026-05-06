@@ -17,6 +17,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       title: `${gh ? `@${gh}` : short} — SolCV`,
       description: `Web3 CV powered by onchain activity and GitHub.`,
     },
+    other: {
+      "solana-action": `/api/actions/tip/${wallet}`,
+    },
   };
 }
 
