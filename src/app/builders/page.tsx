@@ -103,7 +103,7 @@ export default function BuildersPage() {
               ))}
               <button className="filter-chip" onClick={() => setAvailableOnly(v => !v)}
                 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', padding: '0.4rem 0.9rem', border: '1px solid', borderColor: availableOnly ? '#14F195' : '#333', color: availableOnly ? '#14F195' : '#666', background: availableOnly ? 'rgba(20,241,149,0.05)' : 'transparent', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em', marginLeft: 'auto' }}>
-                ⚡ AVAILABLE
+                AVAILABLE
               </button>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
@@ -158,7 +158,7 @@ export default function BuildersPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>{b.name || b.username}</div>
                       <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.25rem' }}>{b.role || 'Web3 Builder'}</div>
-                      {b.available && <div style={{ fontSize: '0.6rem', fontFamily: "'JetBrains Mono', monospace", color: '#14F195', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>⚡ AVAILABLE</div>}
+                      {b.available && <div style={{ fontSize: '0.6rem', fontFamily: "'JetBrains Mono', monospace", color: '#14F195', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>AVAILABLE</div>}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '0.55rem', fontFamily: "'JetBrains Mono', monospace", color: '#666', marginBottom: '0.2rem', textTransform: 'uppercase' }}>SCORE</div>
@@ -169,14 +169,14 @@ export default function BuildersPage() {
                   {b.ecosystems?.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
                       {b.ecosystems.map((eco, j) => (
-                        <span key={j} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#14F195', border: '1px solid rgba(20,241,149,0.25)', padding: '0.2rem 0.5rem', background: 'rgba(20,241,149,0.04)' }}>✦ {eco}</span>
+                        <span key={j} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#14F195', border: '1px solid rgba(20,241,149,0.25)', padding: '0.2rem 0.5rem', background: 'rgba(20,241,149,0.04)' }}>{eco}</span>
                       ))}
                     </div>
                   )}
 
                   {b.focus && (
                     <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: '#9945FF', border: '1px solid rgba(153,69,255,0.3)', padding: '0.4rem 0.75rem', display: 'inline-block', marginBottom: '1.5rem', background: 'rgba(153,69,255,0.04)' }}>
-                      🎯 {b.focus}
+                      {b.focus}
                     </div>
                   )}
 

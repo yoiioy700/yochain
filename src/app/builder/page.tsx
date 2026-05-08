@@ -1,10 +1,11 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Nav from '@/components/Nav';
 import Link from 'next/link';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 interface Entry { date: string; title: string; }
 interface ProjectEntry { name: string; desc: string; url: string; tech: string; }
@@ -36,7 +37,7 @@ function EntryList({ label, entries, setter, datePlaceholder, titlePlaceholder }
           <button onClick={() => remove(i)}
             style={{ background: '#0a0a0a', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem', height: '100%', transition: 'color 0.2s' }}
             onMouseOver={e => e.currentTarget.style.color = '#fff'}
-            onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>✕</button>
+            onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>x</button>
         </div>
       ))}
       <button onClick={add} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', marginTop: '0.5rem', borderRadius: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>+ Add {label}</button>
@@ -58,7 +59,7 @@ function ProjectList({ projects, setter }: {
       {projects.map((p, i) => (
         <div key={i} style={{ background: 'transparent', borderLeft: '2px solid var(--accent-orange)', paddingLeft: '1.25rem', marginBottom: '1.5rem', position: 'relative' }}>
           <button onClick={() => remove(i)}
-            style={{ position: 'absolute', top: 0, right: 0, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem' }}>✕</button>
+            style={{ position: 'absolute', top: 0, right: 0, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem' }}>x</button>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', marginBottom: '1px', background: 'var(--border-color)' }}>
             <input className="form-input" placeholder="Project Name" value={p.name}
               onChange={e => update(i, 'name', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
@@ -85,10 +86,19 @@ function ProjectList({ projects, setter }: {
 export default function BuilderPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { publicKey, connected } = useWallet();
+  const [walletFilled, setWalletFilled] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/');
   }, [status, router]);
+
+  const autofillWallet = useCallback(() => {
+    if (!publicKey) return;
+    setSolAddress(publicKey.toBase58());
+    setWalletFilled(true);
+    setTimeout(() => setWalletFilled(false), 2000);
+  }, [publicKey]);
 
   const [photoUrl, setPhotoUrl] = useState('');
   const [name, setName] = useState('');
@@ -110,6 +120,7 @@ export default function BuilderPage() {
   const [ecosystemsLine, setEcosystemsLine] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (session?.user && !name) setName(session.user.name || '');
@@ -191,7 +202,7 @@ export default function BuilderPage() {
       <div className="container">
         <div style={{ padding: '2rem 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
-            <h1 className="display" style={{ fontSize: '2rem' }}>Builder 🛠</h1>
+            <h1 className="display" style={{ fontSize: '2rem' }}>Builder</h1>
             <p style={{ color: 'var(--text-muted)' }}>Fill in your details below.</p>
           </div>
           <button onClick={() => signOut()} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 1rem' }}>Sign Out</button>
@@ -338,8 +349,33 @@ export default function BuilderPage() {
                   <input type="text" className="form-input" placeholder="https://..." value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score & SNS)</span></label>
-                  <input type="text" className="form-input" placeholder="5zi..." value={solAddress} onChange={e => setSolAddress(e.target.value)} />
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score &amp; SNS)</span></span>
+                    {connected && (
+                      <button
+                        type="button"
+                        onClick={autofillWallet}
+                        style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          padding: '0.2rem 0.65rem',
+                          background: walletFilled ? 'rgba(20,241,149,0.15)' : 'transparent',
+                          border: '1px solid',
+                          borderColor: walletFilled ? '#14F195' : 'rgba(20,241,149,0.4)',
+                          color: walletFilled ? '#14F195' : 'rgba(20,241,149,0.7)',
+                          borderRadius: '100px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {walletFilled ? 'Filled' : 'Autofill'}
+                      </button>
+                    )}
+                  </label>
+                  <input type="text" className="form-input" placeholder="5zi... (or click Autofill if wallet connected)" value={solAddress} onChange={e => setSolAddress(e.target.value)} />
                 </div>
 
               </div>
@@ -354,9 +390,18 @@ export default function BuilderPage() {
               </button>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'center', letterSpacing: '1px' }}>{activeTab + 1} / 4</span>
               {activeTab === 3 ? (
-                <Link href={`/cv/${cvUsername}?d=${getEncodedData()}`} target="_blank" onClick={() => saveProfile()} className="btn" style={{ background: '#14F195', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, textTransform: 'uppercase' }}>
-                  View Profile & Mint ↗
-                </Link>
+                <button 
+                  onClick={async () => {
+                    setIsGenerating(true);
+                    await saveProfile();
+                    router.push(`/cv/${cvUsername}?d=${getEncodedData()}`);
+                  }} 
+                  disabled={isGenerating}
+                  className="btn" 
+                  style={{ background: '#14F195', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0, textTransform: 'uppercase', opacity: isGenerating ? 0.7 : 1, cursor: isGenerating ? 'wait' : 'pointer' }}
+                >
+                  {isGenerating ? 'GENERATING...' : 'View Profile & Mint ↗'}
+                </button>
               ) : (
                 <button onClick={() => setActiveTab(t => Math.min(3, t + 1))}
                   className="btn btn-outline"
@@ -409,13 +454,13 @@ export default function BuilderPage() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
                       {ecosystemsLine.split(',').map((eco, i) => eco.trim() && (
                         <span key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: '#14F195', border: '1px solid #14F195', padding: '0.2rem 0.5rem', background: 'rgba(20, 241, 149, 0.1)', borderRadius: '4px' }}>
-                          ✦ {eco.trim()}
+                          {eco.trim()}
                         </span>
                       ))}
                     </div>
                   )}
 
-                  {focus && <div style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: '#9945FF', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem', border: '1px solid #9945FF', padding: '0.5rem 1rem', display: 'inline-block', width: 'fit-content' }}>🎯 {focus}</div>}
+                  {focus && <div style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: '#9945FF', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem', border: '1px solid #9945FF', padding: '0.5rem 1rem', display: 'inline-block', width: 'fit-content' }}>{focus}</div>}
                   {available && !focus && <div style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: '#14F195', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem' }}>AVAILABLE_FOR_WORK</div>}
                 </div>
 

@@ -142,10 +142,10 @@ export async function GET(req: NextRequest) {
 
       const badges: string[] = [];
       const days = firstTxDate ? Math.floor((Date.now() - new Date(firstTxDate).getTime()) / 86400000) : 0;
-      if (days >= 365) badges.push('💎 Early Adopter');
-      if (swapCount >= 10 || protocolSet.size >= 5) badges.push('🔥 DeFi Degen');
-      if (tokenCount >= 5) badges.push('🙌 Diamond Hands');
-      if (nftCount >= 2) badges.push('🖼️ NFT Collector');
+      if (days >= 365) badges.push('Early Adopter');
+      if (swapCount >= 10 || protocolSet.size >= 5) badges.push('DeFi Degen');
+      if (tokenCount >= 5) badges.push('Diamond Hands');
+      if (nftCount >= 2) badges.push('NFT Collector');
 
       return NextResponse.json({
         wallet: targetWallet,
@@ -204,8 +204,8 @@ export async function GET(req: NextRequest) {
 
     const badges: string[] = [];
     const days = firstTxDate ? Math.floor((Date.now() - new Date(firstTxDate).getTime()) / 86400000) : 0;
-    if (days >= 365) badges.push('💎 Early Adopter');
-    if (tokenCount >= 5) badges.push('🙌 Diamond Hands');
+    if (days >= 365) badges.push('Early Adopter');
+    if (tokenCount >= 5) badges.push('Diamond Hands');
 
     return NextResponse.json({
       wallet: targetWallet,

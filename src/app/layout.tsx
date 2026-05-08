@@ -5,7 +5,7 @@ import { NextAuthProvider } from '@/components/NextAuthProvider';
 
 export const metadata: Metadata = {
   title: 'YoChain — Your Web3 Identity, Proven Onchain',
-  description: 'Generate a stunning, shareable Web3 profile powered by your real onchain activity across Solana, EVM, and GitHub.',
+  description: 'Generate a stunning, shareable Web3 profile powered by your real onchain activity on Solana and GitHub.',
 };
 
 

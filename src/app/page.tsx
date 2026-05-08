@@ -1,14 +1,11 @@
 'use client';
 
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Nav from '@/components/Nav';
 import { signIn, useSession } from 'next-auth/react';
 
 export default function LandingPage() {
-  const { publicKey, connected } = useWallet();
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -33,8 +30,8 @@ export default function LandingPage() {
               </h1>
               <p className="hero-desc" style={{ maxWidth: '600px', margin: '0 auto 2.5rem', lineHeight: '1.6', fontSize: '1.1rem', color: 'var(--text-muted)' }}>
                 Login with GitHub. <strong>YoChain</strong> automatically generates a
-                stunning developer profile powered by your real activity across
-                Solana, EVM (ETH/Polygon/Base/OP/BSC), and GitHub.
+                stunning developer profile powered by your real onchain activity on
+                Solana and GitHub.
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', margin: '0 auto', alignItems: 'center' }}>

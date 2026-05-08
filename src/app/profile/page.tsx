@@ -71,31 +71,85 @@ export default function ProfilePage() {
     <>
       <Nav />
       <div className="container" style={{ padding: '4rem 0' }}>
-        <h1 className="display" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>My Identities</h1>
+        <h1 className="display" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>My Profile</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '3rem' }}>
-          Your minted YoChain CVs and professional identities on the Solana blockchain.
+          Your minted YoChain CVs and professional profiles on the Solana blockchain.
         </p>
 
         {!connected ? (
-          <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#111', borderRadius: '12px', border: '1px solid #333' }}>
-            <h3 style={{ marginBottom: '1rem' }}>Wallet Not Connected</h3>
-            <p style={{ color: 'var(--text-muted)' }}>Please connect your Solana Devnet wallet using the button in the top right to view your identities.</p>
+          <div style={{
+            textAlign: 'center', padding: '5rem 2rem',
+            background: 'linear-gradient(135deg, #0a0a0a 0%, rgba(20,241,149,0.03) 100%)',
+            border: '1px solid rgba(20,241,149,0.12)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {/* Background glow */}
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '300px', height: '300px',
+              background: 'radial-gradient(circle, rgba(20,241,149,0.06) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            {/* Animated wallet icon */}
+            <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1.5rem' }}>
+              <div style={{
+                width: '64px', height: '64px', margin: '0 auto',
+                background: 'rgba(20,241,149,0.08)',
+                border: '1px solid rgba(20,241,149,0.25)',
+                borderRadius: '16px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{
+                  width: '28px', height: '28px',
+                  border: '2px solid rgba(20,241,149,0.4)',
+                  transform: 'rotate(45deg)',
+                }} />
+              </div>
+              <div style={{
+                position: 'absolute', top: '-4px', right: '-4px',
+                width: '14px', height: '14px', borderRadius: '50%',
+                background: '#555',
+                border: '2px solid #0a0a0a',
+                animation: 'breathe 2s ease-in-out infinite',
+              }} />
+            </div>
+            <h3 style={{ marginBottom: '0.5rem', fontFamily: "'JetBrains Mono', monospace", fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#fff' }}>
+              No Wallet Connected
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '360px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
+              Connect your Solana wallet using the button in the top‑right corner to view your minted YoChain identities.
+            </p>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+              fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem',
+              color: 'rgba(20,241,149,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase',
+            }}>
+              <span style={{ animation: 'breathe 1.5s ease-in-out infinite', fontSize: '0.5rem' }}>●</span>
+              Devnet · Solana
+            </div>
           </div>
         ) : loading ? (
           <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-            <div style={{ color: 'var(--accent-orange)', marginBottom: '1rem' }}>Scanning blockchain for your identities...</div>
-            <div style={{ fontSize: '2rem', animation: 'spin 1.5s linear infinite' }}>⏳</div>
+            <div style={{ color: 'var(--accent-orange)', marginBottom: '1.5rem', fontSize: '0.85rem', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scanning blockchain...</div>
+            <div style={{
+              width: '32px', height: '32px', margin: '0 auto',
+              border: '2px solid #333',
+              borderTopColor: '#14F195',
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }} />
           </div>
         ) : error ? (
           <div style={{ background: 'rgba(255, 50, 50, 0.1)', border: '1px solid rgba(255,50,50,0.3)', padding: '2rem', borderRadius: '8px', color: '#ff6b6b' }}>
             <strong>Error:</strong> {error}
           </div>
         ) : identities.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#0a0a0a', borderRadius: '12px', border: '1px dashed #333' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>👻</div>
-            <h3 style={{ marginBottom: '0.5rem' }}>No Identities Found</h3>
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#0a0a0a', border: '1px dashed #333' }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>NO_IDENTITIES_FOUND</div>
+            <h3 style={{ marginBottom: '0.5rem' }}>No Profiles Found</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>You haven't minted any YoChain ID NFTs on Devnet yet.</p>
-            <Link href="/builder" className="btn btn-primary" style={{ display: 'inline-block' }}>Go to Builder & Mint</Link>
+            <Link href="/builder" className="btn btn-primary" style={{ display: 'inline-block' }}>Go to Builder &amp; Mint</Link>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
@@ -154,6 +208,10 @@ export default function ProfilePage() {
       
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes breathe {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.85); }
+        }
       `}} />
     </>
   );

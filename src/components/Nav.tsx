@@ -2,19 +2,24 @@
 
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 
-const WalletMultiButton = dynamic(
-  () => import('@solana/wallet-adapter-react-ui').then((mod) => mod.WalletMultiButton),
-  { ssr: false }
-);
+// Truncate Solana address: "5ziK...xK9m"
+function truncateAddress(address: string): string {
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
 
 export default function Nav() {
   const { data: session } = useSession();
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+
+  const { publicKey, connected, disconnect, connecting } = useWallet();
+  const { setVisible } = useWalletModal();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
@@ -22,10 +27,20 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
+  const handleWalletClick = useCallback(() => {
+    if (connected) {
+      disconnect();
+    } else {
+      setVisible(true);
+    }
+  }, [connected, disconnect, setVisible]);
+
   const navLinks = [
     { href: '/builders', label: 'Builders' },
     { href: '/leaderboard', label: 'Leaderboard' },
   ];
+
+  const addrLabel = publicKey ? truncateAddress(publicKey.toBase58()) : null;
 
   return (
     <nav className="nav" style={{ boxShadow: scrolled ? '0 2px 12px oklch(0% 0 0 / 0.06)' : 'none' }}>
@@ -60,7 +75,51 @@ export default function Nav() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <WalletMultiButton style={{ height: '36px', fontSize: '0.82rem', padding: '0 1rem', background: '#2a2a2a' }} />
+            {/* Custom Wallet Button */}
+            <button
+              id="nav-wallet-btn"
+              onClick={handleWalletClick}
+              disabled={connecting}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                height: '36px',
+                padding: '0 1rem',
+                background: connected ? 'rgba(20, 241, 149, 0.08)' : '#1a1a1a',
+                border: connected ? '1px solid rgba(20, 241, 149, 0.35)' : '1px solid #333',
+                borderRadius: '100px',
+                color: connected ? '#14F195' : '#999',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                cursor: connecting ? 'wait' : 'pointer',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.04em',
+              }}
+              onMouseEnter={e => {
+                if (!connecting) {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = connected ? 'rgba(255,80,80,0.5)' : '#14F195';
+                  (e.currentTarget as HTMLButtonElement).style.color = connected ? '#ff6b6b' : '#14F195';
+                }
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = connected ? 'rgba(20, 241, 149, 0.35)' : '#333';
+                (e.currentTarget as HTMLButtonElement).style.color = connected ? '#14F195' : '#999';
+              }}
+            >
+              {/* Status dot */}
+              <span style={{
+                width: '6px', height: '6px',
+                borderRadius: '50%',
+                background: connecting ? '#f0a500' : connected ? '#14F195' : '#555',
+                boxShadow: connected ? '0 0 6px #14F195' : 'none',
+                flexShrink: 0,
+                animation: connecting ? 'pulse 1s ease-in-out infinite' : 'none',
+              }} />
+              {connecting ? 'Connecting...' : connected && addrLabel ? addrLabel : 'Connect Wallet'}
+            </button>
+
             {session?.user && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <Link
@@ -68,7 +127,7 @@ export default function Nav() {
                   className="btn btn-outline"
                   style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}
                 >
-                  My Identities
+                  My Profile
                 </Link>
                 <Link
                   href="/builder"
@@ -82,7 +141,13 @@ export default function Nav() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </nav>
   );
 }
-

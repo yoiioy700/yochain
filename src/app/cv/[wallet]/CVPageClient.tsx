@@ -121,7 +121,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                   <div className="neo-label" style={{marginBottom:'0.4rem'}}>CREDENTIALS</div>
                   <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap'}}>
                     {verifiedBadges.map((b,i) => (
-                      <span key={i} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.6rem', color:'#888', background:'#111', border:'1px solid #222', padding:'0.2rem 0.5rem'}}>✓ {b}</span>
+                      <span key={i} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.6rem', color:'#888', background:'#111', border:'1px solid #222', padding:'0.2rem 0.5rem'}}>{b}</span>
                     ))}
                   </div>
                 </div>
@@ -143,7 +143,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 {data.gh && <a href={`https://github.com/${data.gh}`} target="_blank" rel="noreferrer" className="neo-link"><GhIcon/> {data.gh}</a>}
                 {data.web && <a href={data.web.startsWith('http')?data.web:`https://${data.web}`} target="_blank" rel="noreferrer" className="neo-link"><WebIcon/> WEBSITE</a>}
                 {ecoList.map((eco, i) => (
-                  <span key={i} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.65rem', color:'#14F195', border:'1px solid rgba(20,241,149,0.25)', padding:'0.3rem 0.65rem', background:'rgba(20,241,149,0.04)'}}>✦ {eco}</span>
+                  <span key={i} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.65rem', color:'#14F195', border:'1px solid rgba(20,241,149,0.25)', padding:'0.3rem 0.65rem', background:'rgba(20,241,149,0.04)'}}>{eco}</span>
                 ))}
               </div>
             </div>
@@ -321,7 +321,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 <div style={{display:'flex', flexDirection:'column', gap:'0.75rem'}}>
                   {parseList(data.cert).map((c,i)=>(
                     <div key={i} style={{fontSize:'0.85rem', color:'#888', display:'flex', gap:'0.5rem', alignItems:'flex-start'}}>
-                      <span style={{color:'#14F195', flexShrink:0}}>✓</span>{c}
+                      <span style={{color:'#14F195', flexShrink:0}}>—</span>{c}
                     </div>
                   ))}
                 </div>
@@ -358,6 +358,11 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       alert("Please connect your wallet first to send a tip.");
       return;
     }
+    const recipientAddress = data?.sol;
+    if (!recipientAddress) {
+      alert("This profile hasn't set a Solana address yet. Ask them to add one in their Builder settings.");
+      return;
+    }
     const amount = parseFloat(amountVal);
     if (isNaN(amount) || amount <= 0) {
       alert("Please enter a valid amount.");
@@ -366,7 +371,8 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
     
     try {
       setIsTipping(true);
-      const targetWallet = new PublicKey(wallet);
+      const targetWallet = new PublicKey(recipientAddress);
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: walletAdapter.publicKey,
@@ -382,7 +388,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       const signature = await walletAdapter.sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, 'confirmed');
       
-      alert(`Successfully sent ${amount} SOL tip! 🎉`);
+      alert(`Successfully sent ${amount} SOL tip!`);
       setShowTipModal(false);
     } catch (err: any) {
       console.error(err);
@@ -435,7 +441,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       }).sendAndConfirm(umi, { confirm: { commitment: 'confirmed' } });
 
       console.log('[Mint] Success! Signature:', result.signature);
-      alert(`Identity Minted! 🎉\nNFT: ${asset.publicKey.toString()}\nView on explorer: https://explorer.solana.com/address/${asset.publicKey.toString()}?cluster=devnet`);
+      alert(`Identity Minted!\nNFT: ${asset.publicKey.toString()}\nView on explorer: https://explorer.solana.com/address/${asset.publicKey.toString()}?cluster=devnet`);
     } catch (err: any) {
       console.error('[Mint] Full error:', err);
       console.error('[Mint] Logs:', err?.logs);
