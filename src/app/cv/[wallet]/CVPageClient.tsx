@@ -175,6 +175,9 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 {solData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Transactions</span><span style={{color:'#888'}}>+{((solData.totalTransactions||0)*0.04).toFixed(0)}</span></div>}
                 {solData?.nftCount > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>NFTs</span><span style={{color:'#888'}}>+{((solData.nftCount||0)*3).toFixed(0)}</span></div>}
                 {data.tw && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Twitter</span><span style={{color:'#888'}}>+50</span></div>}
+                {sklList.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Skills Bonus</span><span style={{color:'#888'}}>+{sklList.length * 5}</span></div>}
+                {expList.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Experience</span><span style={{color:'#888'}}>+{expList.length * 10}</span></div>}
+                {projects.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Projects</span><span style={{color:'#888'}}>+{projects.length * 20}</span></div>}
               </div>
             </div>
           </div>
@@ -519,7 +522,10 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
     (solData?.tokenCount||0) * 2 +
     (ghData?.stats?.totalStars||0) * 2 +
     (ghData?.user?.publicRepos||0) * 1 +
-    (data.tw ? 50 : 0)
+    (data.tw ? 50 : 0) +
+    (parseList(data.skl).length) * 5 +
+    (parseList(data.exp).length) * 10 +
+    (projects.length) * 20
   ).toFixed(0);
 
   const tmplProps: TmplProps = {data,ghData,solData,projects,parseList,reputationScore,wallet,isDark,c};

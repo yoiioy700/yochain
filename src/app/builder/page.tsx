@@ -6,12 +6,55 @@ import { useRouter } from 'next/navigation';
 import Nav from '@/components/Nav';
 import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
+import ComboboxInput from '@/components/ComboboxInput';
+
+const SUGGESTIONS_ROLE = [
+  'Full Stack Developer', 'Frontend Developer', 'Backend Developer', 
+  'Smart Contract Developer', 'Solana Developer', 'Web3 Developer', 
+  'UI/UX Designer', 'DevOps Engineer', 'Blockchain Engineer', 'Product Manager',
+  'Data Engineer', 'Mobile Developer', 'Security Researcher', 'Technical Writer'
+];
+
+const SUGGESTIONS_FOCUS = [
+  'DeFi', 'NFTs', 'Gaming', 'DAOs', 'Infrastructure', 'DePIN', 
+  'AI x Blockchain', 'Consumer Apps', 'Tooling', 'RWA', 'Layer 2', 'Privacy'
+];
+
+const SUGGESTIONS_SKILLS = [
+  'Rust', 'TypeScript', 'JavaScript', 'Python', 'Solidity', 'Go',
+  'React', 'Next.js', 'Node.js', 'Anchor', 'Web3.js', 'Ethers.js',
+  'Solana', 'Ethereum', 'Hardhat', 'Foundry', 'Docker', 'AWS',
+  'Tailwind CSS', 'GraphQL', 'PostgreSQL', 'Redis', 'Figma', 'Photoshop'
+];
+
+const SUGGESTIONS_ECOSYSTEMS = [
+  'Solana', 'Ethereum', 'Base', 'Arbitrum', 'Optimism', 'Polygon',
+  'Avalanche', 'BNB Chain', 'Sui', 'Aptos', 'Near', 'Cosmos', 'Superteam'
+];
+
+const SUGGESTIONS_LANGUAGES = [
+  'Indonesian', 'English', 'Japanese', 'Mandarin', 'Korean',
+  'Spanish', 'French', 'German', 'Arabic', 'Hindi', 'Portuguese'
+];
+
+const SUGGESTIONS_CERTS = [
+  'AWS Cloud Practitioner', 'AWS Solutions Architect',
+  'Solana Bootcamp', 'Ethereum Developer Certification',
+  'Google Cloud Professional', 'Certified Kubernetes Administrator',
+  'Meta Frontend Developer', 'Coursera Blockchain Specialization'
+];
+
+const SUGGESTIONS_PROJECT_TECH = [
+  'Rust', 'TypeScript', 'JavaScript', 'Python', 'React', 'Next.js',
+  'Node.js', 'Anchor', 'Web3.js', 'Solana', 'Ethereum', 'Tailwind CSS',
+  'GraphQL', 'PostgreSQL', 'Docker', 'Figma'
+];
 
 interface Entry { date: string; title: string; }
-interface ProjectEntry { name: string; desc: string; url: string; tech: string; }
+interface ProjectEntry { name: string; desc: string; url: string; tech: string; touchedName?: boolean; touchedUrl?: boolean; }
 
 const emptyEntry = (): Entry => ({ date: '', title: '' });
-const emptyProject = (): ProjectEntry => ({ name: '', desc: '', url: '', tech: '' });
+const emptyProject = (): ProjectEntry => ({ name: '', desc: '', url: '', tech: '', touchedName: false, touchedUrl: false });
 
 // ─── EntryList MUST be outside BuilderPage to avoid re-mount on every keystroke ───
 function EntryList({ label, entries, setter, datePlaceholder, titlePlaceholder }: {
@@ -51,32 +94,56 @@ function ProjectList({ projects, setter }: {
 }) {
   const add    = () => setter(prev => [...prev, emptyProject()]);
   const remove = (i: number) => setter(prev => prev.filter((_, idx) => idx !== i));
-  const update = (i: number, field: keyof ProjectEntry, val: string) =>
+  const update = (i: number, field: keyof ProjectEntry, val: any) =>
     setter(prev => prev.map((p, idx) => idx === i ? { ...p, [field]: val } : p));
+    
   return (
     <div className="form-group" style={{ marginBottom: '2rem' }}>
       <label className="form-label">Projects</label>
-      {projects.map((p, i) => (
-        <div key={i} style={{ background: 'transparent', borderLeft: '2px solid var(--accent-orange)', paddingLeft: '1.25rem', marginBottom: '1.5rem', position: 'relative' }}>
-          <button onClick={() => remove(i)}
-            style={{ position: 'absolute', top: 0, right: 0, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem' }}>x</button>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', marginBottom: '1px', background: 'var(--border-color)' }}>
-            <input className="form-input" placeholder="Project Name" value={p.name}
-              onChange={e => update(i, 'name', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
-            <input className="form-input" placeholder="https://github.com/..." value={p.url}
-              onChange={e => update(i, 'url', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
+      {projects.map((p, i) => {
+        const urlRegex = /^https?:\/\//i;
+        const showNameErr = p.touchedName && p.name.trim() === '';
+        
+        const showUrlEmptyErr = p.touchedUrl && p.url.trim() === '';
+        const showUrlFormatErr = p.touchedUrl && p.url.trim() !== '' && !urlRegex.test(p.url);
+        const isUrlValid = p.url.trim() !== '' && urlRegex.test(p.url);
+        const isGh = isUrlValid && p.url.toLowerCase().includes('github.com');
+        const showGhWarning = p.touchedUrl && isUrlValid && !isGh;
+
+        return (
+          <div key={i} style={{ background: 'transparent', borderLeft: '2px solid var(--accent-orange)', paddingLeft: '1.25rem', marginBottom: '1.5rem', position: 'relative' }}>
+            <button onClick={() => remove(i)}
+              style={{ position: 'absolute', top: 0, right: 0, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem' }}>x</button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', marginBottom: '1px', background: 'var(--border-color)' }}>
+              <div style={{ background: '#0a0a0a', paddingBottom: '1px' }}>
+                <input className="form-input" placeholder="Project Name" value={p.name}
+                  onChange={e => update(i, 'name', e.target.value)}
+                  onBlur={() => update(i, 'touchedName', true)}
+                  style={{ border: 'none', borderBottom: showNameErr ? '1px solid #ff3333' : 'none', width: '100%' }} />
+                {showNameErr && <div style={{ color: '#ff3333', fontSize: '0.7rem', padding: '0.2rem 0.75rem', background: '#0a0a0a' }}>Nama project wajib diisi</div>}
+              </div>
+              <div style={{ background: '#0a0a0a', paddingBottom: '1px' }}>
+                <input className="form-input" placeholder="https://github.com/..." value={p.url}
+                  onChange={e => update(i, 'url', e.target.value)}
+                  onBlur={() => update(i, 'touchedUrl', true)}
+                  style={{ border: 'none', borderBottom: (showUrlEmptyErr || showUrlFormatErr) ? '1px solid #ff3333' : 'none', width: '100%' }} />
+                {showUrlEmptyErr && <div style={{ color: '#ff3333', fontSize: '0.7rem', padding: '0.2rem 0.75rem', background: '#0a0a0a' }}>Link GitHub wajib diisi</div>}
+                {showUrlFormatErr && <div style={{ color: '#ff3333', fontSize: '0.7rem', padding: '0.2rem 0.75rem', background: '#0a0a0a' }}>URL tidak valid (harus mengandung http/https)</div>}
+                {showGhWarning && <div style={{ color: '#ffaa00', fontSize: '0.7rem', padding: '0.2rem 0.75rem', background: '#0a0a0a' }}>Disarankan menggunakan link GitHub</div>}
+              </div>
+            </div>
+            <div style={{ background: 'var(--border-color)', paddingBottom: '1px', marginBottom: '1px' }}>
+              <textarea className="form-input" placeholder="Short description..." value={p.desc}
+                onChange={e => update(i, 'desc', e.target.value)}
+                style={{ minHeight: '80px', resize: 'none', border: 'none', borderBottom: 'none' }} />
+            </div>
+            <div style={{ background: 'var(--border-color)' }}>
+              <ComboboxInput multi className="form-input" placeholder="Tech stack (e.g. Next.js, Solana)" value={p.tech}
+                onChange={val => update(i, 'tech', val)} suggestions={SUGGESTIONS_PROJECT_TECH} style={{ border: 'none', borderBottom: 'none' }} />
+            </div>
           </div>
-          <div style={{ background: 'var(--border-color)', paddingBottom: '1px', marginBottom: '1px' }}>
-            <textarea className="form-input" placeholder="Short description..." value={p.desc}
-              onChange={e => update(i, 'desc', e.target.value)}
-              style={{ minHeight: '80px', resize: 'none', border: 'none', borderBottom: 'none' }} />
-          </div>
-          <div style={{ background: 'var(--border-color)' }}>
-            <input className="form-input" placeholder="Tech stack (e.g. Next.js, Solana)" value={p.tech}
-              onChange={e => update(i, 'tech', e.target.value)} style={{ border: 'none', borderBottom: 'none' }} />
-          </div>
-        </div>
-      ))}
+        );
+      })}
       <button onClick={add} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', marginTop: '0.5rem', borderRadius: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>+ Add Project</button>
     </div>
   );
@@ -156,12 +223,36 @@ export default function BuilderPage() {
 
   const saveProfile = async () => {
     try {
-      const reputationScore = (
-        (skillsLine.split(',').filter(Boolean).length) * 5 +
+      let onchainBonus = 0;
+      try {
+        if (solAddress) {
+          const res = await fetch(`/api/solana?wallet=${solAddress}`).then(r => r.json());
+          if (res) {
+            onchainBonus += (res.totalTransactions||0) * 0.04;
+            onchainBonus += (res.swapCount||0) * 5;
+            onchainBonus += (res.nftCount||0) * 3;
+            onchainBonus += (res.tokenCount||0) * 2;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const gh = (session as any)?.githubUsername || session?.user?.name || '';
+        if (gh) {
+          const res = await fetch(`/api/github?username=${gh}`).then(r => r.json());
+          if (res) {
+            onchainBonus += (res.stats?.totalStars||0) * 2;
+            onchainBonus += (res.user?.publicRepos||0) * 1;
+          }
+        }
+      } catch (e) {}
+
+      const reputationScore = Math.floor(
+        (skillsLine.split(',').filter(s => s.trim().length > 0).length) * 5 +
         (twitterHandle ? 50 : 0) +
-        (solAddress ? 30 : 0) +
-        (experience.filter(e => e.title).length * 10) +
-        (projects.filter(p => p.name).length * 20)
+        (experience.filter(e => e.title || e.date).length * 10) +
+        (projects.filter(p => p.name).length * 20) +
+        onchainBonus
       );
       await fetch('/api/profiles', {
         method: 'POST',
@@ -276,18 +367,11 @@ export default function BuilderPage() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Role / Title</label>
-                  <input type="text" className="form-input" placeholder="e.g. Full Stack Developer" value={role} onChange={e => setRole(e.target.value)} />
+                  <ComboboxInput className="form-input" placeholder="e.g. Full Stack Developer" value={role} onChange={setRole} suggestions={SUGGESTIONS_ROLE} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Current Focus</label>
-                  <select className="form-input" value={focus} onChange={e => setFocus(e.target.value)} style={{ padding: '0.75rem', fontSize: '0.85rem' }}>
-                    <option value="">-- Select Focus --</option>
-                    <option value="Building New Project">Building New Project</option>
-                    <option value="Looking for Co-founder">Looking for Co-founder</option>
-                    <option value="Raising Seed/Grants">Raising Seed/Grants</option>
-                    <option value="Exploring Opportunities">Exploring Opportunities</option>
-                    <option value="Open for Hire">Open for Hire</option>
-                  </select>
+                  <ComboboxInput className="form-input" placeholder="e.g. DeFi, Consumer Apps..." value={focus} onChange={setFocus} suggestions={SUGGESTIONS_FOCUS} />
                 </div>
                 <div className="form-group">
                   <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -309,19 +393,19 @@ export default function BuilderPage() {
                   datePlaceholder="2022–Now" titlePlaceholder="Freelance Designer" />
                 <div className="form-group">
                   <label className="form-label">Skills (Comma Separated)</label>
-                  <textarea className="form-input" placeholder="Photoshop, Next.js, Solana..." value={skillsLine} onChange={e => setSkillsLine(e.target.value)} style={{ minHeight: '80px' }} />
+                  <ComboboxInput multi className="form-input" placeholder="Photoshop, Next.js, Solana..." value={skillsLine} onChange={setSkillsLine} suggestions={SUGGESTIONS_SKILLS} style={{ minHeight: '80px', paddingTop: '0.75rem', verticalAlign: 'top' }} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Ecosystems (Comma Separated)</label>
-                  <input type="text" className="form-input" placeholder="Solana, Superteam, Base..." value={ecosystemsLine} onChange={e => setEcosystemsLine(e.target.value)} />
+                  <ComboboxInput multi className="form-input" placeholder="Solana, Superteam, Base..." value={ecosystemsLine} onChange={setEcosystemsLine} suggestions={SUGGESTIONS_ECOSYSTEMS} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Languages</label>
-                  <input type="text" className="form-input" placeholder="Indonesian, English, Japanese" value={languagesLine} onChange={e => setLanguagesLine(e.target.value)} />
+                  <ComboboxInput multi className="form-input" placeholder="Indonesian, English, Japanese" value={languagesLine} onChange={setLanguagesLine} suggestions={SUGGESTIONS_LANGUAGES} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Certifications</label>
-                  <input type="text" className="form-input" placeholder="AWS Cloud Practitioner, Solana Bootcamp" value={certsLine} onChange={e => setCertsLine(e.target.value)} />
+                  <ComboboxInput multi className="form-input" placeholder="AWS Cloud Practitioner, Solana Bootcamp" value={certsLine} onChange={setCertsLine} suggestions={SUGGESTIONS_CERTS} />
                 </div>
               </div>
             )}
@@ -392,6 +476,14 @@ export default function BuilderPage() {
               {activeTab === 3 ? (
                 <button 
                   onClick={async () => {
+                    const activeProjects = projects.filter(p => p.name.trim() !== '' || p.url.trim() !== '' || p.desc.trim() !== '' || p.tech.trim() !== '');
+                    const isProjectsValid = activeProjects.every(p => p.name.trim() !== '' && p.url.trim() !== '' && /^https?:\/\//i.test(p.url));
+                    if (!isProjectsValid) {
+                      setActiveTab(2);
+                      setProjects(projects.map(p => ({...p, touchedName: true, touchedUrl: true})));
+                      return;
+                    }
+
                     setIsGenerating(true);
                     await saveProfile();
                     router.push(`/cv/${cvUsername}?d=${getEncodedData()}`);
@@ -403,7 +495,17 @@ export default function BuilderPage() {
                   {isGenerating ? 'GENERATING...' : 'View Profile & Mint ↗'}
                 </button>
               ) : (
-                <button onClick={() => setActiveTab(t => Math.min(3, t + 1))}
+                <button onClick={() => {
+                  if (activeTab === 2) {
+                    const activeProjects = projects.filter(p => p.name.trim() !== '' || p.url.trim() !== '' || p.desc.trim() !== '' || p.tech.trim() !== '');
+                    const isProjectsValid = activeProjects.every(p => p.name.trim() !== '' && p.url.trim() !== '' && /^https?:\/\//i.test(p.url));
+                    if (!isProjectsValid) {
+                      setProjects(projects.map(p => ({...p, touchedName: true, touchedUrl: true})));
+                      return;
+                    }
+                  }
+                  setActiveTab(t => Math.min(3, t + 1));
+                }}
                   className="btn btn-outline"
                   style={{ fontSize: '0.75rem', padding: '0.5rem 1.5rem', borderRadius: 0 }}>
                   NEXT →
