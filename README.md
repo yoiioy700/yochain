@@ -13,7 +13,7 @@ Traditional CVs are static and easy to forge, while onchain activity is often fr
 
 Built with an editorial-style "Aurora" aesthetic, the platform ensures that your developer identity isn't just verified—it looks premium. Every profile can be minted as a Metaplex Core NFT, cementing your professional milestones onchain.
 
-### Fitur Utama
+### Key Features
 - **Connect Wallet:** Seamless, standard-compliant Solana wallet integration.
 - **GitHub Integration:** Sync your top repositories, commits, and developer stats directly into your CV.
 - **Onchain Profile:** Automatically fetch your Solana activity, including wallet age, DeFi badges, and token count via Helius RPC.
@@ -23,12 +23,12 @@ Built with an editorial-style "Aurora" aesthetic, the platform ensures that your
 - **Multi-template CV:** Choose from various premium layouts, including the signature "Aurora" design.
 - **`.sol` Domain Support:** Natively resolves Bonfida Solana Name Service (SNS) domains for cleaner profile URLs.
 
-## Cara Kerja
-1. **Connect & Authenticate** - Pengguna menghubungkan dompet Solana mereka (via Wallet Standard) dan menghubungkan akun GitHub.
-2. **Build Profile** - Platform menarik data GitHub dan aktivitas onchain (via Helius) untuk mengisi data CV secara otomatis.
-3. **Customize** - Pengguna memilih template, menambahkan detail personal, dan menyesuaikan skill serta tautan yang ingin ditampilkan.
-4. **Mint** - Pengguna mencetak (mint) profil mereka sebagai Metaplex Core Identity NFT di jaringan Solana Devnet.
-5. **Share** - Profil kini tersedia secara publik di `/cv/[wallet]` atau `/cv/[name].sol` dan siap dibagikan.
+## How It Works
+1. **Connect & Authenticate** - Users connect their Solana wallet (via Wallet Standard) and link their GitHub account.
+2. **Build Profile** - The platform fetches GitHub data and onchain activity (via Helius) to auto-populate the CV data.
+3. **Customize** - Users select a template, add personal details, and customize the skills and links they want to showcase.
+4. **Mint** - Users mint their profile as a Metaplex Core Identity NFT on the Solana Devnet.
+5. **Share** - The profile is now publicly available at `/cv/[wallet]` or `/cv/[name].sol` and ready to be shared.
 
 ## Tech Stack
 | Layer        | Tools                                             |
@@ -41,66 +41,66 @@ Built with an editorial-style "Aurora" aesthetic, the platform ensures that your
 | Authentication| NextAuth.js (GitHub Provider)                    |
 | PDF Export   | `html2canvas`, `jspdf`                            |
 
-## Cara Mulai
+## Getting Started
 
 ### Prerequisites
-- Node.js 20 atau versi terbaru
-- npm atau yarn
-- Dompet Solana (contoh: Phantom, Backpack) di jaringan Devnet
+- Node.js 20 or newer
+- npm or yarn
+- A Solana Wallet (e.g., Phantom, Backpack) on the Devnet network
 
-### Install
+### Installation
 ```bash
 git clone https://github.com/your-username/yochain.git
 cd yochain
 npm install
 ```
 
-### Konfigurasi Environment Variables
-Copy file template environment:
+### Environment Configuration
+Copy the environment template file:
 ```bash
 cp .env.local.example .env.local
 ```
-Lalu isi nilai-nilai berikut di `.env.local`:
+Then fill in the following values in `.env.local`:
 
-| Variable | Keterangan | Wajib/Opsional |
+| Variable | Description | Required/Optional |
 | -------- | ----------- | ----------------- |
-| `GITHUB_CLIENT_ID` | GitHub OAuth App Client ID | Wajib |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth App Client Secret | Wajib |
-| `NEXTAUTH_URL` | Base URL untuk NextAuth (contoh: `http://localhost:3000`) | Wajib |
-| `NEXTAUTH_SECRET` | Secret key untuk enkripsi sesi NextAuth | Wajib |
-| `HELIUS_API_KEY` | API Key Helius RPC untuk parsing data onchain | Wajib |
-| `NEXT_PUBLIC_SOLANA_RPC` | Public Solana RPC URL | Wajib |
-| `COVALENT_API_KEY` | API Key Covalent (untuk fitur legacy multi-chain) | Opsional |
+| `GITHUB_CLIENT_ID` | GitHub OAuth App Client ID | Required |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App Client Secret | Required |
+| `NEXTAUTH_URL` | Base URL for NextAuth (e.g., `http://localhost:3000`) | Required |
+| `NEXTAUTH_SECRET` | Secret key for NextAuth session encryption | Required |
+| `HELIUS_API_KEY` | Helius RPC API Key for parsing onchain data | Required |
+| `NEXT_PUBLIC_SOLANA_RPC` | Public Solana RPC URL | Required |
+| `COVALENT_API_KEY` | Covalent API Key (for legacy multi-chain features) | Optional |
 
-### Jalankan Aplikasi
-Jalankan development server:
+### Run the Application
+Start the development server:
 ```bash
 npm run dev
 ```
-Aplikasi akan bisa diakses melalui `http://localhost:3000`.
+The application will be accessible at `http://localhost:3000`.
 
 ## Roadmap
 
-### Sudah Diimplementasi
-- [x] Transisi penuh ke arsitektur Solana-native
-- [x] Integrasi Wallet Standard untuk auto-discovery
-- [x] Autentikasi GitHub OAuth & penarikan data repositori
-- [x] Desain UI profil bergaya editorial "Aurora" tanpa emoji
-- [x] Parsing data onchain yang kaya menggunakan Helius RPC
-- [x] Resolusi nama domain `.sol` (Bonfida)
-- [x] Mint Identity NFT menggunakan standar Metaplex Core di Devnet
-- [x] Export profil CV ke PDF
-- [x] Multi-template untuk kustomisasi CV
+### Completed
+- [x] Full transition to a Solana-native architecture
+- [x] Wallet Standard integration for auto-discovery
+- [x] GitHub OAuth authentication & repository data fetching
+- [x] "Aurora" editorial-style profile UI design (no emojis)
+- [x] Rich onchain data parsing using Helius RPC
+- [x] `.sol` domain name resolution (Bonfida)
+- [x] Mint Identity NFTs using the Metaplex Core standard on Devnet
+- [x] Export CV profile to PDF
+- [x] Multi-templates for CV customization
 
-### Sedang Dikerjakan
-- [ ] Optimasi hasil export PDF pada resolusi layar mobile
-- [ ] Implementasi integrasi Solana Blinks untuk fitur endorsement
-- [ ] Penyempurnaan handling transaksi di jaringan
+### In Progress
+- [ ] Optimize PDF export output for mobile screen resolutions
+- [ ] Implement Solana Blinks integration for endorsements
+- [ ] Refine network transaction handling
 
-### Direncanakan
-- [ ] Deployment ke Solana Mainnet
-- [ ] Integrasi onchain attestations (verifikasi skill secara desentralisasi)
-- [ ] Dukungan custom Web2 domain mapping untuk profil pengguna
+### Planned
+- [ ] Deployment to Solana Mainnet
+- [ ] Integrate onchain attestations (decentralized skill verification)
+- [ ] Support custom Web2 domain mapping for user profiles
 
 ## Acknowledgements
 Built for the [Colosseum Frontier Hackathon](https://colosseum.org/) under the [Superteam Indonesia](https://superteam.fun/) track. Powered by Solana, Helius, and Metaplex.
