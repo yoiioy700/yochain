@@ -111,9 +111,15 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 </div>
               </div>
               <div>
-                <div className="neo-label" style={{marginBottom:'0.4rem'}}>STATUS</div>
-                <div style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.9rem', color: data.avail==='1' ? '#14F195' : '#555'}}>
-                  {data.foc || (data.avail==='1' ? 'Available for Work' : 'Not Available')}
+                <div className="neo-label" style={{marginBottom:'0.4rem'}}>CURRENT FOCUS</div>
+                <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap', fontFamily:"'JetBrains Mono', monospace", fontSize:'0.7rem'}}>
+                  {data.foc ? data.foc.split(',').filter(Boolean).map((f, i) => (
+                    <span key={i} style={{color: '#fff', border: '1px solid var(--accent-orange)', padding: '0.2rem 0.5rem', background: '#0a0a0a'}}>{f}</span>
+                  )) : (
+                    <span style={{fontSize:'0.9rem', color: data.avail==='1' ? '#14F195' : '#555'}}>
+                      {data.avail==='1' ? 'Available for Work' : 'Not Available'}
+                    </span>
+                  )}
                 </div>
               </div>
               {verifiedBadges.length > 0 && (
@@ -173,10 +179,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
               <div style={{display:'flex', flexDirection:'column', gap:'0.35rem'}}>
                 {ghData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>GitHub</span><span style={{color:'#888'}}>+{((ghData.stats?.totalStars||0)*2 + (ghData.user?.publicRepos||0)).toFixed(0)}</span></div>}
                 {solData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Transactions</span><span style={{color:'#888'}}>+{((solData.totalTransactions||0)*0.04).toFixed(0)}</span></div>}
-                {solData?.nftCount > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>NFTs</span><span style={{color:'#888'}}>+{((solData.nftCount||0)*3).toFixed(0)}</span></div>}
                 {data.tw && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Twitter</span><span style={{color:'#888'}}>+50</span></div>}
-                {sklList.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Skills Bonus</span><span style={{color:'#888'}}>+{sklList.length * 5}</span></div>}
-                {expList.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Experience</span><span style={{color:'#888'}}>+{expList.length * 10}</span></div>}
                 {projects.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Projects</span><span style={{color:'#888'}}>+{projects.length * 20}</span></div>}
               </div>
             </div>
@@ -517,14 +520,9 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
   const projects = parseProjects(data.proj);
   const reputationScore = isLoadingScore ? '...' : (
     (solData?.totalTransactions||0) * 0.04 +
-    (solData?.swapCount||0) * 5 +
-    (solData?.nftCount||0) * 3 +
-    (solData?.tokenCount||0) * 2 +
     (ghData?.stats?.totalStars||0) * 2 +
     (ghData?.user?.publicRepos||0) * 1 +
     (data.tw ? 50 : 0) +
-    (parseList(data.skl).length) * 5 +
-    (parseList(data.exp).length) * 10 +
     (projects.length) * 20
   ).toFixed(0);
 

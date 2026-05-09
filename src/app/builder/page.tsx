@@ -183,7 +183,7 @@ export default function BuilderPage() {
 
   const [solAddress, setSolAddress] = useState('');
   const [available, setAvailable] = useState(false);
-  const [focus, setFocus] = useState('');
+  const [focus, setFocus] = useState<string[]>([]);
   const [ecosystemsLine, setEcosystemsLine] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -209,7 +209,7 @@ export default function BuilderPage() {
       exp: serializeEntries(experience),
       proj: serializeProjects(projects),
       skl: skillsLine, lang: languagesLine, cert: certsLine,
-      eco: ecosystemsLine, foc: focus,
+      eco: ecosystemsLine, foc: focus.join(','),
       tw: twitterHandle, web: websiteUrl,
       sol: solAddress,
       avail: available ? '1' : '0',
@@ -229,9 +229,6 @@ export default function BuilderPage() {
           const res = await fetch(`/api/solana?wallet=${solAddress}`).then(r => r.json());
           if (res) {
             onchainBonus += (res.totalTransactions||0) * 0.04;
-            onchainBonus += (res.swapCount||0) * 5;
-            onchainBonus += (res.nftCount||0) * 3;
-            onchainBonus += (res.tokenCount||0) * 2;
           }
         }
       } catch (e) {}
@@ -248,10 +245,8 @@ export default function BuilderPage() {
       } catch (e) {}
 
       const reputationScore = Math.floor(
-        (skillsLine.split(',').filter(s => s.trim().length > 0).length) * 5 +
         (twitterHandle ? 50 : 0) +
-        (experience.filter(e => e.title || e.date).length * 10) +
-        (projects.filter(p => p.name).length * 20) +
+        (projects.filter(p => p.name).length * 20) + 
         onchainBonus
       );
       await fetch('/api/profiles', {
@@ -371,7 +366,15 @@ export default function BuilderPage() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Current Focus</label>
-                  <ComboboxInput className="form-input" placeholder="e.g. DeFi, Consumer Apps..." value={focus} onChange={setFocus} suggestions={SUGGESTIONS_FOCUS} />
+                  <ComboboxInput 
+                    className="form-input" 
+                    placeholder="e.g. DeFi, Consumer Apps..." 
+                    renderChips={true}
+                    maxSelections={3}
+                    chipsValue={focus}
+                    onChipsChange={setFocus}
+                    suggestions={SUGGESTIONS_FOCUS} 
+                  />
                 </div>
                 <div className="form-group">
                   <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>

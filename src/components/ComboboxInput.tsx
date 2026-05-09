@@ -2,12 +2,16 @@ import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 
 interface ComboboxInputProps {
   suggestions: string[];
-  value: string;
-  onChange: (val: string) => void;
+  value?: string;
+  onChange?: (val: string) => void;
   placeholder?: string;
   multi?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  renderChips?: boolean;
+  maxSelections?: number;
+  chipsValue?: string[];
+  onChipsChange?: (val: string[]) => void;
 }
 
 export default function ComboboxInput({
@@ -18,11 +22,18 @@ export default function ComboboxInput({
   multi = false,
   className = '',
   style,
+  renderChips = false,
+  maxSelections = 3,
+  chipsValue = [],
+  onChipsChange,
 }: ComboboxInputProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [localInputValue, setLocalInputValue] = useState('');
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+
+  const currentInputValue = renderChips ? localInputValue : (value || '');
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -35,27 +46,39 @@ export default function ComboboxInput({
   }, []);
 
   const getCurrentSearchTerm = () => {
-    if (!multi) return value;
-    const parts = value.split(',');
-    return parts[parts.length - 1].trimLeft(); // Keep leading space if typed, but trim left for logic is tricky. Let's just return the last part.
+    if (renderChips) return localInputValue;
+    if (!multi) return currentInputValue;
+    const parts = currentInputValue.split(',');
+    return parts[parts.length - 1].trimLeft();
   };
 
   const getFilteredSuggestions = () => {
     const term = getCurrentSearchTerm().trim().toLowerCase();
-    if (!term) return suggestions;
-    return suggestions.filter(s => s.toLowerCase().includes(term));
+    
+    let available = suggestions;
+    if (renderChips && chipsValue) {
+      available = suggestions.filter(s => !chipsValue.includes(s));
+    }
+    
+    if (!term) return available;
+    return available.filter(s => s.toLowerCase().includes(term));
   };
 
   const filtered = getFilteredSuggestions();
 
   const handleSelect = (suggestion: string) => {
-    if (multi) {
-      const parts = value.split(',');
+    if (renderChips && onChipsChange) {
+      if (chipsValue.length < maxSelections) {
+        onChipsChange([...chipsValue, suggestion]);
+      }
+      setLocalInputValue('');
+    } else if (multi && onChange) {
+      const parts = currentInputValue.split(',');
       parts.pop(); // Remove the current partial term
       const prefix = parts.join(',');
       const newVal = prefix ? `${prefix}, ${suggestion}, ` : `${suggestion}, `;
       onChange(newVal);
-    } else {
+    } else if (onChange) {
       onChange(suggestion);
     }
     setIsOpen(false);
@@ -126,21 +149,51 @@ export default function ComboboxInput({
 
   return (
     <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
-      <input
-        type="text"
-        className={className}
-        value={value}
-        placeholder={placeholder}
-        style={{ ...style, width: '100%' }}
-        onChange={e => {
-          onChange(e.target.value);
-          setIsOpen(true);
-          setFocusedIndex(-1);
-        }}
-        onFocus={() => setIsOpen(true)}
-        onKeyDown={handleKeyDown}
-        autoComplete="off"
-      />
+      {renderChips && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: chipsValue.length > 0 ? '0.5rem' : 0 }}>
+          {chipsValue.map(chip => (
+            <div key={chip} style={{
+              display: 'flex', alignItems: 'center', gap: '0.25rem',
+              background: '#0a0a0a', border: '1px solid var(--accent-orange)',
+              padding: '0.2rem 0.5rem', borderRadius: '4px',
+              fontSize: '0.75rem', color: '#fff'
+            }}>
+              {chip}
+              <button 
+                type="button"
+                onClick={() => onChipsChange?.(chipsValue.filter(c => c !== chip))}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', padding: '0 2px' }}
+              >×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {(!renderChips || chipsValue.length < maxSelections) ? (
+        <input
+          type="text"
+          className={className}
+          value={currentInputValue}
+          placeholder={placeholder}
+          style={{ ...style, width: '100%' }}
+          onChange={e => {
+            if (renderChips) {
+              setLocalInputValue(e.target.value);
+            } else if (onChange) {
+              onChange(e.target.value);
+            }
+            setIsOpen(true);
+            setFocusedIndex(-1);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
+          autoComplete="off"
+        />
+      ) : (
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem 0' }}>
+          Maksimal {maxSelections} focus
+        </div>
+      )}
       
       {isOpen && filtered.length > 0 && (
         <ul

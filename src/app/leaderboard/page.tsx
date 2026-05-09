@@ -13,7 +13,7 @@ interface Builder {
   photo: string;
   score: number;
   ecosystems: string[];
-  focus: string;
+  focus: string[] | string;
   available: boolean;
   profileUrl: string;
   savedAt: string;
