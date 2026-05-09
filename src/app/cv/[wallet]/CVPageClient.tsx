@@ -101,9 +101,9 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
         <div className="cv-hero-grid rev d1" style={{display:'grid', gridTemplateColumns:'1fr 320px', minHeight:'70vh', borderBottom:'1px solid #1a1a1a'}}>
 
           {/* Left: Name + meta */}
-          <div style={{padding:'clamp(2rem,5vw,5rem)', display:'flex', flexDirection:'column', justifyContent:'space-between', borderRight:'1px solid #1a1a1a'}}>
+          <div style={{padding:'clamp(2rem,5vw,5rem)', display:'flex', flexDirection:'column', justifyContent:'center', borderRight:'1px solid #1a1a1a'}}>
             {/* Top row micro-data */}
-            <div style={{display:'flex', gap:'2rem', flexWrap:'wrap', marginBottom:'auto', paddingBottom:'3rem'}}>
+            <div style={{display:'flex', gap:'2rem', flexWrap:'wrap', marginBottom:'4rem'}}>
               <div>
                 <div className="neo-label" style={{marginBottom:'0.4rem'}}>ONCHAIN ID</div>
                 <div style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.9rem', color: solData?.domainName ? '#14F195' : '#444'}}>
@@ -353,19 +353,27 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
   const [tipAmount, setTipAmount] = useState('0.1');
   const [isTipping, setIsTipping] = useState(false);
 
+  const [alertConfig, setAlertConfig] = useState<{show: boolean; title: string; message: string; type: 'success'|'error'|'info'; link?: string; linkText?: string}>({
+    show: false, title: '', message: '', type: 'info'
+  });
+
+  const showAlert = (title: string, message: string, type: 'success'|'error'|'info' = 'info', link?: string, linkText?: string) => {
+    setAlertConfig({ show: true, title, message, type, link, linkText });
+  };
+
   const handleTip = async (amountVal: string) => {
     if (!walletAdapter.connected || !walletAdapter.publicKey) {
-      alert("Please connect your wallet first to send a tip.");
+      showAlert("Connection Required", "Please connect your wallet first to send a tip.", "error");
       return;
     }
     const recipientAddress = data?.sol;
     if (!recipientAddress) {
-      alert("This profile hasn't set a Solana address yet. Ask them to add one in their Builder settings.");
+      showAlert("Address Missing", "This profile hasn't set a Solana address yet. Ask them to add one in their Builder settings.", "error");
       return;
     }
     const amount = parseFloat(amountVal);
     if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid amount.");
+      showAlert("Invalid Amount", "Please enter a valid amount.", "error");
       return;
     }
     
@@ -388,11 +396,11 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       const signature = await walletAdapter.sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, 'confirmed');
       
-      alert(`Successfully sent ${amount} SOL tip!`);
       setShowTipModal(false);
+      showAlert("Tip Sent!", `Successfully sent ${amount} SOL tip!`, "success");
     } catch (err: any) {
       console.error(err);
-      alert(`Tip failed: ${err.message}`);
+      showAlert("Tip Failed", err.message, "error");
     } finally {
       setIsTipping(false);
     }
@@ -400,7 +408,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
   const handleMintIdentity = async () => {
     if (!walletAdapter.connected || !walletAdapter.publicKey) {
-      alert("Please connect your Solana wallet first (using the top right nav button)!");
+      showAlert("Connection Required", "Please connect your Solana wallet first (using the top right nav button)!", "error");
       return;
     }
 
@@ -441,12 +449,18 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       }).sendAndConfirm(umi, { confirm: { commitment: 'confirmed' } });
 
       console.log('[Mint] Success! Signature:', result.signature);
-      alert(`Identity Minted!\nNFT: ${asset.publicKey.toString()}\nView on explorer: https://explorer.solana.com/address/${asset.publicKey.toString()}?cluster=devnet`);
+      showAlert(
+        "Identity Minted!", 
+        `Your onchain ID was successfully minted!\nNFT Address: ${asset.publicKey.toString()}`,
+        "success",
+        `https://explorer.solana.com/address/${asset.publicKey.toString()}?cluster=devnet`,
+        "View on Solana Explorer ↗"
+      );
     } catch (err: any) {
       console.error('[Mint] Full error:', err);
       console.error('[Mint] Logs:', err?.logs);
       const logs = err?.logs ? '\n\nLogs:\n' + err.logs.slice(-5).join('\n') : '';
-      alert(`Mint failed: ${err.message}${logs}`);
+      showAlert("Mint Failed", `${err.message}${logs}`, "error");
     } finally {
       setIsMinting(false);
     }
@@ -470,7 +484,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       const url = URL.createObjectURL(pdf.output('blob'));
       window.open(url,'_blank');
       setTimeout(()=>URL.revokeObjectURL(url),10000);
-    } catch(err){ console.error(err); alert('Gagal generate PDF.'); }
+    } catch(err){ console.error(err); showAlert("PDF Error", "Gagal generate PDF.", "error"); }
     finally { setDownloading(false); }
   };
 
@@ -537,6 +551,39 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
             <button onClick={()=>handleTip(tipAmount)} disabled={isTipping} style={{width:'100%',padding:'1.25rem',background:'#fff',color:'#000',border:'none',fontSize:'1rem',fontWeight:800,cursor:isTipping?'wait':'pointer',opacity:isTipping?0.5:1,textTransform:'uppercase',letterSpacing:'1px'}}>
               {isTipping ? 'PROCESSING_TRANSACTION...' : `SEND ${tipAmount} SOL`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      {alertConfig.show && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',backdropFilter:'blur(4px)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Space Grotesk', sans-serif"}}>
+          <div style={{background:'#050505',padding:'2.5rem',border:`1px solid ${alertConfig.type === 'error' ? '#ff3333' : alertConfig.type === 'success' ? '#14F195' : '#333'}`,width:'90%',maxWidth:'450px',color:'#fff', borderRadius:'8px', boxShadow:`0 10px 40px rgba(${alertConfig.type === 'error' ? '255,51,51' : alertConfig.type === 'success' ? '20,241,149' : '255,255,255'}, 0.1)`}}>
+            <h3 style={{marginTop:0,marginBottom:'1rem',fontSize:'1.25rem',display:'flex',alignItems:'center',gap:'0.75rem',fontWeight:700,color:alertConfig.type === 'error' ? '#ff3333' : alertConfig.type === 'success' ? '#14F195' : '#fff'}}>
+              {alertConfig.type === 'error' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>}
+              {alertConfig.type === 'success' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+              {alertConfig.type === 'info' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>}
+              {alertConfig.title}
+            </h3>
+            
+            <p style={{fontSize:'0.9rem',color:'#aaa',lineHeight:1.6,fontFamily:"'JetBrains Mono', monospace",marginBottom:'2rem', whiteSpace:'pre-wrap', wordBreak:'break-word'}}>
+              {alertConfig.message}
+            </p>
+
+            {alertConfig.link && (
+              <div style={{marginBottom:'2rem'}}>
+                <a href={alertConfig.link} target="_blank" rel="noopener noreferrer" style={{color:'#14F195',textDecoration:'underline',fontFamily:"'JetBrains Mono', monospace",fontSize:'0.85rem'}}>
+                  {alertConfig.linkText || alertConfig.link}
+                </a>
+              </div>
+            )}
+            
+            <button 
+              onClick={() => setAlertConfig({...alertConfig, show: false})} 
+              style={{width:'100%',padding:'1rem',background:alertConfig.type === 'error' ? '#ff3333' : alertConfig.type === 'success' ? '#14F195' : '#fff',color:'#000',border:'none',fontSize:'0.9rem',fontWeight:800,cursor:'pointer',textTransform:'uppercase',letterSpacing:'1px',borderRadius:'4px'}}
+            >
+              Tutup
             </button>
           </div>
         </div>
