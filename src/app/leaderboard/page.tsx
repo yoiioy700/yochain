@@ -109,6 +109,9 @@ export default function LeaderboardPage() {
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>{topThree[1].name || topThree[1].username}</div>
                   <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.25rem', marginBottom: '1.5rem' }}>{topThree[1].role}</div>
                   <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>{topThree[1].score}</div>
+                  {topThree[1].profileUrl && (
+                    <Link href={topThree[1].profileUrl} target="_blank" style={{ display: 'inline-block', marginTop: '1.5rem', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: '#fff', background: '#222', border: '1px solid #333', padding: '0.5rem 1rem', textDecoration: 'none', fontWeight: 700, textTransform: 'uppercase', transition: 'all 0.2s' }}>VIEW PROFILE →</Link>
+                  )}
                 </div>
               )}
 
@@ -132,6 +135,9 @@ export default function LeaderboardPage() {
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>{topThree[2].name || topThree[2].username}</div>
                   <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.25rem', marginBottom: '1.5rem' }}>{topThree[2].role}</div>
                   <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>{topThree[2].score}</div>
+                  {topThree[2].profileUrl && (
+                    <Link href={topThree[2].profileUrl} target="_blank" style={{ display: 'inline-block', marginTop: '1.5rem', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: '#fff', background: '#222', border: '1px solid #333', padding: '0.5rem 1rem', textDecoration: 'none', fontWeight: 700, textTransform: 'uppercase', transition: 'all 0.2s' }}>VIEW PROFILE →</Link>
+                  )}
                 </div>
               )}
             </div>

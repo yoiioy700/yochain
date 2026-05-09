@@ -593,40 +593,42 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
         </div>
       )}
 
-      {/* Floating Mint Button */}
-      <div className="no-print" style={{position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 999}}>
-        <button 
-          onClick={handleMintIdentity} 
-          disabled={isMinting}
-          style={{
-            background: '#14F195',
-            color: '#000',
-            border: 'none',
-            padding: '1rem 1.5rem',
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            cursor: isMinting ? 'wait' : 'pointer',
-            transition: 'all 0.2s ease',
-            opacity: isMinting ? 0.7 : 1,
-            boxShadow: '0 0 0 1px rgba(20,241,149,0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#fff';
-            e.currentTarget.style.boxShadow = '8px 8px 0px rgba(20,241,149,0.5)';
-            e.currentTarget.style.transform = 'translate(-4px, -4px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#14F195';
-            e.currentTarget.style.boxShadow = '0 0 0 1px rgba(20,241,149,0.3)';
-            e.currentTarget.style.transform = 'translate(0, 0)';
-          }}
-        >
-          {isMinting ? 'MINTING...' : 'MINT ONCHAIN ID'}
-        </button>
-      </div>
+      {/* Floating Mint Button - Only visible to the profile owner */}
+      {walletAdapter.publicKey?.toBase58() === data.sol && (
+        <div className="no-print" style={{position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 999}}>
+          <button 
+            onClick={handleMintIdentity} 
+            disabled={isMinting}
+            style={{
+              background: '#14F195',
+              color: '#000',
+              border: 'none',
+              padding: '1rem 1.5rem',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              cursor: isMinting ? 'wait' : 'pointer',
+              transition: 'all 0.2s ease',
+              opacity: isMinting ? 0.7 : 1,
+              boxShadow: '0 0 0 1px rgba(20,241,149,0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.boxShadow = '8px 8px 0px rgba(20,241,149,0.5)';
+              e.currentTarget.style.transform = 'translate(-4px, -4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#14F195';
+              e.currentTarget.style.boxShadow = '0 0 0 1px rgba(20,241,149,0.3)';
+              e.currentTarget.style.transform = 'translate(0, 0)';
+            }}
+          >
+            {isMinting ? 'MINTING...' : 'MINT ONCHAIN ID'}
+          </button>
+        </div>
+      )}
 
       <div className="no-print" style={{background:'#050505',borderBottom:'1px solid #222',padding:'1rem 0'}}>
         <div className="container" style={{display:'flex',justifyContent:'flex-end',gap:'1rem'}}>
