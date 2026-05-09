@@ -60,11 +60,11 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
           font-size: 0.7rem;
           text-transform: uppercase;
           letter-spacing: 0.12em;
-          color: #555;
+          color: #888;
         }
 
         .neo-link {
-          color: #aaa;
+          color: #ccc;
           text-decoration: none;
           display: inline-flex;
           align-items: center;
@@ -136,10 +136,10 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
 
             {/* Giant name */}
             <div>
-              <h1 style={{fontSize:'clamp(3.5rem, 8vw, 7.5rem)', fontWeight:700, lineHeight:0.88, letterSpacing:'-0.04em', color:'#fff', textTransform:'uppercase', margin:'0 0 2rem 0', wordBreak:'break-word'}}>
+              <h1 style={{fontSize:'clamp(3rem, 6vw, 6rem)', fontWeight:700, lineHeight:0.88, letterSpacing:'-0.04em', color:'#fff', textTransform:'uppercase', margin:'0 0 2rem 0', wordBreak:'break-word'}}>
                 {data.n || 'NATIVE BUILDER'}
               </h1>
-              <div style={{fontSize:'clamp(1.1rem, 2vw, 1.5rem)', color:'#555', fontWeight:400, marginBottom:'2rem'}}>
+              <div style={{fontSize:'clamp(1.1rem, 2vw, 1.5rem)', color:'#888', fontWeight:400, marginBottom:'2rem'}}>
                 {data.r || 'Web3 Developer'}
               </div>
 
@@ -177,10 +177,10 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 {reputationScore}
               </div>
               <div style={{display:'flex', flexDirection:'column', gap:'0.35rem'}}>
-                {ghData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>GitHub</span><span style={{color:'#888'}}>+{((ghData.stats?.totalStars||0)*2 + (ghData.user?.publicRepos||0)).toFixed(0)}</span></div>}
-                {solData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Transactions</span><span style={{color:'#888'}}>+{((solData.totalTransactions||0)*0.04).toFixed(0)}</span></div>}
-                {data.tw && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Twitter</span><span style={{color:'#888'}}>+50</span></div>}
-                {projects.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#555'}}><span>Projects</span><span style={{color:'#888'}}>+{projects.length * 20}</span></div>}
+                {ghData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#888'}}><span>GitHub</span><span style={{color:'#fff'}}>+{((ghData.stats?.totalStars||0)*2 + (ghData.user?.publicRepos||0)).toFixed(0)}</span></div>}
+                {solData && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#888'}}><span>Transactions</span><span style={{color:'#fff'}}>+{((solData.totalTransactions||0)*0.04).toFixed(0)}</span></div>}
+                {data.tw && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#888'}}><span>Twitter</span><span style={{color:'#fff'}}>+50</span></div>}
+                {projects.length > 0 && <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.65rem', fontFamily:"'JetBrains Mono', monospace", color:'#888'}}><span>Projects</span><span style={{color:'#fff'}}>+{projects.length * 20}</span></div>}
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
         {data.b && (
           <div className="rev d2" style={{padding:'clamp(2rem,4vw,4rem) clamp(2rem,5vw,5rem)', borderBottom:'1px solid #1a1a1a', display:'flex', gap:'4rem', alignItems:'center'}}>
             <div className="neo-label" style={{flexShrink:0, writingMode:'vertical-rl', transform:'rotate(180deg)', letterSpacing:'0.15em'}}>BIO</div>
-            <p style={{fontSize:'clamp(1.1rem, 2vw, 1.5rem)', lineHeight:1.6, color:'#888', fontWeight:400, margin:0, maxWidth:'800px'}}>
+            <p style={{fontSize:'clamp(1.1rem, 2vw, 1.5rem)', lineHeight:1.6, color:'#b0b0b0', fontWeight:400, margin:0, maxWidth:'800px'}}>
               {data.b}
             </p>
           </div>
@@ -224,7 +224,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
             {expList.length > 0 && (
               <div>
                 <div style={{display:'flex', alignItems:'center', gap:'1rem', marginBottom:'3rem'}}>
-                  <div className="neo-label" style={{color:'#9945FF'}}>// EXPERIENCE</div>
+                  <div className="neo-label" style={{color:'#b27aff'}}>// EXPERIENCE</div>
                   <div style={{flex:1, height:'1px', background:'#1a1a1a'}}/>
                 </div>
                 <div style={{display:'flex', flexDirection:'column', gap:0}}>
@@ -234,7 +234,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                     const role = split.slice(1).join(':').trim() || e;
                     return (
                       <div key={i} style={{display:'grid', gridTemplateColumns:'140px 1fr', gap:'2rem', padding:'2rem 0', borderBottom:'1px solid #111', alignItems:'start'}}>
-                        <div style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.7rem', color:'#555', paddingTop:'0.3rem'}}>{period}</div>
+                        <div style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.7rem', color:'#888', paddingTop:'0.3rem'}}>{period}</div>
                         <div>
                           <div style={{fontSize:'1.1rem', fontWeight:600, color:'#fff', letterSpacing:'-0.01em', marginBottom:'0.25rem'}}>{role}</div>
                         </div>
@@ -258,11 +258,11 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                         <div style={{fontSize:'1.35rem', fontWeight:700, color:'#fff', letterSpacing:'-0.02em'}}>{p.name}</div>
                         {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="neo-link" style={{flexShrink:0}}>VISIT ↗</a>}
                       </div>
-                      <p style={{fontSize:'0.95rem', color:'#666', lineHeight:1.7, margin:'0 0 1.5rem 0'}}>{p.desc}</p>
+                      <p style={{fontSize:'0.95rem', color:'#999', lineHeight:1.7, margin:'0 0 1.5rem 0'}}>{p.desc}</p>
                       {p.tech && (
                         <div style={{display:'flex', flexWrap:'wrap', gap:'0.4rem'}}>
                           {p.tech.split(',').map((t,j)=>(
-                            <span key={j} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.65rem', color:'#555', background:'#111', padding:'0.2rem 0.5rem', border:'1px solid #1a1a1a'}}>{t.trim()}</span>
+                            <span key={j} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.65rem', color:'#888', background:'#111', padding:'0.2rem 0.5rem', border:'1px solid #1a1a1a'}}>{t.trim()}</span>
                           ))}
                         </div>
                       )}
@@ -295,14 +295,14 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
 
             {eduList.length > 0 && (
               <div>
-                <div className="neo-label" style={{color:'#9945FF', marginBottom:'1.5rem'}}>EDUCATION</div>
+                <div className="neo-label" style={{color:'#b27aff', marginBottom:'1.5rem'}}>EDUCATION</div>
                 <div style={{display:'flex', flexDirection:'column', gap:'1.5rem'}}>
                   {eduList.map((e,i)=>{
                     const split = e.split(':');
                     return (
                       <div key={i} style={{paddingLeft:'1rem', borderLeft:'2px solid #222'}}>
                         <div style={{fontSize:'1rem', fontWeight:600, color:'#fff', marginBottom:'0.2rem'}}>{split[1]?.trim() || e}</div>
-                        {split[0] && <div style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.65rem', color:'#555'}}>{split[0].trim()}</div>}
+                        {split[0] && <div style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.65rem', color:'#888'}}>{split[0].trim()}</div>}
                       </div>
                     );
                   })}
@@ -315,7 +315,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 <div className="neo-label" style={{marginBottom:'1.5rem'}}>LANGUAGES</div>
                 <div style={{display:'flex', flexWrap:'wrap', gap:'0.5rem'}}>
                   {parseList(data.lang).map((l,i)=>(
-                    <span key={i} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.7rem', color:'#888', padding:'0.3rem 0.6rem', border:'1px solid #1a1a1a'}}>{l}</span>
+                    <span key={i} style={{fontFamily:"'JetBrains Mono', monospace", fontSize:'0.7rem', color:'#aaa', padding:'0.3rem 0.6rem', border:'1px solid #1a1a1a'}}>{l}</span>
                   ))}
                 </div>
               </div>
@@ -326,7 +326,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
                 <div className="neo-label" style={{marginBottom:'1.5rem'}}>CERTIFICATIONS</div>
                 <div style={{display:'flex', flexDirection:'column', gap:'0.75rem'}}>
                   {parseList(data.cert).map((c,i)=>(
-                    <div key={i} style={{fontSize:'0.85rem', color:'#888', display:'flex', gap:'0.5rem', alignItems:'flex-start'}}>
+                    <div key={i} style={{fontSize:'0.85rem', color:'#aaa', display:'flex', gap:'0.5rem', alignItems:'flex-start'}}>
                       <span style={{color:'#14F195', flexShrink:0}}>—</span>{c}
                     </div>
                   ))}
