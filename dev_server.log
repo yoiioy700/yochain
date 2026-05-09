@@ -411,3 +411,32 @@ SyntaxError: Identifier 'a' has already been declared
   371 |         SystemProgram.transfer({
   372 |           fromPubkey: walletAdapter.publicKey, (src/app/cv/[wallet]/CVPageClient.tsx:388:15)
 ✓ Compiled in 62ms
+ GET /leaderboard 200 in 28ms (next.js: 8ms, application-code: 20ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /api/profiles 200 in 8ms (next.js: 4ms, application-code: 4ms)
+ GET /api/profiles 200 in 5ms (next.js: 2ms, application-code: 3ms)
+ GET /cv/yoiioy700?d=eyJwIjoiL3VwbG9hZHMvMTc3ODIyMDE4ODQyMS1hbnlhX2Zvcmdlcl9wZnBfKDEpXygxKV8oMSlfMTF6b24uanBnIiwibiI6InlvaWlveSIsInIiOiJGdWxsIFN0YWNrIERldmVsb3BlciIsImIiOiJpbSB5b2lpb3kgYXMgZnVsbHN0YWNrIGRldmVsb3BlciBmcm9tIGluZG9lbmVzaWEiLCJlIjoiYXJpcWZlYnJpYW4zQGdtYWlsLmNvbSIsImVkdSI6IjIwMTctMjAyMDogU01LIFRSSSBNSVRSQSwyMDIwLTIwMjQ6IElJVEIiLCJleHAiOiIyMDIwLTIwMjI6IEZyZWVsYW5jZSBEZXNpZ25lciwyMDIyLU5vdzogRnVsbCBTdGFjayBEZXZlbG9wZXIiLCJwcm9qIjoieW8gcmVwfFlvQ2hhaW4gLSBXZWIzIFByb2ZpbGUgQnVpbGRlciB3aXRoIG11bHRpLXRlbXBsYXRlIENWICsgcmVwdXRhdGlvbiBlbmdpbmV8aHR0cHM6Ly9naXRodWIuY29tL3lvaWlveTcwMC95b2NoYWlufCIsInNrbCI6IlBob3Rvc2hvcCwgQWRvYmUgSWx1c3RyYXRvciwgTmV4dCBKUyIsImxhbmciOiJJbmRvbmVzaWEsIEVuZ2xpc2giLCJjZXJ0IjoiTUJHIiwiZWNvIjoiU29sYW5hIiwiZm9jIjoiRXhwbG9yaW5nIE9wcG9ydHVuaXRpZXMiLCJ0dyI6InlvaWlveSIsIndlYiI6IiIsInNvbCI6IjczdHQ1TkhxNTZGNk1TMXNWdlc0OWVaV2FwejJicFVMUUFQajZGUVc4SmJzIiwiYXZhaWwiOiIwIiwiZ2giOiJ5b2lpb3k3MDAifQ== 200 in 139ms (next.js: 48ms, application-code: 90ms)
+[browser] Unable to redefine window.ethereum: TypeError: Cannot redefine property: ethereum
+    at Object.defineProperty (<anonymous>)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61307)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61893)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61897)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:60780) (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61538)
+[browser] Failed to assign ethereum proxy: TypeError: Cannot set property ethereum of #<Window> which has only a getter
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61603)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61893)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61897)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:60780) (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61623)
+[browser] Uncaught TypeError: Invalid property descriptor. Cannot both specify accessors and a value or writable attribute, #<Object>
+    at Object.defineProperty (<anonymous>)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61758)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61893)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:61897)
+    at <unknown> (chrome-extension://fiikommddbeccaoicoejoniammnalkfa/assets/chunk-inject.js:1:60780)
+[browser] Uncaught SyntaxError: Identifier 'a' has already been declared
+SyntaxError: Identifier 'a' has already been declared
+[browser] Backpack couldn't override `window.ethereum`. (chrome-extension://aflkmfhebedbjioipglgcbcmnbpgliof/injected.js:1:7388032)
+ GET /api/auth/session 200 in 66ms (next.js: 38ms, application-code: 28ms)
+ GET /api/auth/session 200 in 15ms (next.js: 2ms, application-code: 13ms)
+ GET /api/github?username=yoiioy700 200 in 505ms (next.js: 6ms, application-code: 499ms)
+ GET /api/solana?wallet=73tt5NHq56F6MS1sVvW49eZWapz2bpULQAPj6FQW8Jbs 200 in 2.6s (next.js: 17ms, application-code: 2.6s)

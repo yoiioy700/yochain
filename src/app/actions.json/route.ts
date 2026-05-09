@@ -1,25 +1,27 @@
-import { ACTIONS_CORS_HEADERS, ActionsJson } from "@solana/actions";
+import { NextResponse } from 'next/server';
 
-export const GET = async () => {
-  const payload: ActionsJson = {
-    rules: [
-      {
-        pathPattern: "/cv/*",
-        apiPath: "/api/actions/tip/*",
-      },
-      {
-        pathPattern: "/api/actions/tip/*",
-        apiPath: "/api/actions/tip/*",
-      },
-    ],
-  };
+export async function GET() {
+  return NextResponse.json(
+    {
+      rules: [
+        {
+          pathPattern: '/profile/*',
+          apiPath: '/api/actions/endorse/*'
+        },
+        {
+          pathPattern: '/api/actions/endorse/*',
+          apiPath: '/api/actions/endorse/*'
+        }
+      ]
+    },
+    {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Encoding, Accept-Encoding'
+      }
+    }
+  );
+}
 
-  return Response.json(payload, {
-    headers: ACTIONS_CORS_HEADERS,
-  });
-};
-
-// DO NOT FORGET TO INCLUDE OPTIONS METHOD FOR CORS
-export const OPTIONS = async () => {
-  return new Response(null, { headers: ACTIONS_CORS_HEADERS });
-};
+export const OPTIONS = GET;
