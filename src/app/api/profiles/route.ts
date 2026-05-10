@@ -12,7 +12,15 @@ export async function GET() {
       .order('score', { ascending: false });
 
     if (error) throw error;
-    return NextResponse.json(data || []);
+
+    // Map snake_case DB columns → camelCase for frontend
+    const mapped = (data || []).map((p: any) => ({
+      ...p,
+      profileUrl: p.profile_url,
+      savedAt: p.saved_at,
+    }));
+
+    return NextResponse.json(mapped);
   } catch (error) {
     console.error('Error fetching profiles from Supabase:', error);
     return NextResponse.json([]);
