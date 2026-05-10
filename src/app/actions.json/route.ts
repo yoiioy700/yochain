@@ -1,27 +1,24 @@
-import { NextResponse } from 'next/server';
+import { ACTIONS_CORS_HEADERS } from '@solana/actions';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  return NextResponse.json(
-    {
-      rules: [
-        {
-          pathPattern: '/profile/*',
-          apiPath: '/api/actions/endorse/*'
-        },
-        {
-          pathPattern: '/api/actions/endorse/*',
-          apiPath: '/api/actions/endorse/*'
-        }
-      ]
-    },
-    {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Encoding, Accept-Encoding'
+  const payload = {
+    rules: [
+      {
+        pathPattern: "/cv/*",
+        apiPath: "/api/actions/tip/*"
+      },
+      {
+        pathPattern: "/api/actions/**",
+        apiPath: "/api/actions/**"
       }
-    }
-  );
+    ]
+  };
+
+  return Response.json(payload, {
+    headers: ACTIONS_CORS_HEADERS
+  });
 }
 
 export const OPTIONS = GET;
