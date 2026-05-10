@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/profiles — return all profiles
+// GET /api/profiles — return all profiles ordered by score
 export async function GET() {
   try {
-    const profiles = await kv.get('profiles') || [];
-    return NextResponse.json(profiles);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('score', { ascending: false });
+
+    if (error) throw error;
+    return NextResponse.json(data || []);
   } catch (error) {
-    console.error('Error fetching profiles from KV:', error);
-    // If KV fails (e.g. not configured), return empty array
+    console.error('Error fetching profiles from Supabase:', error);
     return NextResponse.json([]);
   }
 }
@@ -25,21 +29,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'username is required' }, { status: 400 });
     }
 
-    const profiles: any = await kv.get('profiles') || [];
-    const existingIdx = profiles.findIndex((p: { username: string }) => p.username === username);
+    const { error } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          username,
+          name,
+          role,
+          photo,
+          ecosystems,
+          focus,
+          available,
+          score,
+          gh,
+          tw,
+          sol,
+          profile_url: profileUrl,
+          saved_at: savedAt || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'username' }
+      );
 
-    const entry = { username, name, role, photo, ecosystems, focus, available, score, gh, tw, sol, profileUrl, savedAt: savedAt || new Date().toISOString() };
-
-    if (existingIdx >= 0) {
-      profiles[existingIdx] = entry;
-    } else {
-      profiles.push(entry);
-    }
-
-    await kv.set('profiles', profiles);
+    if (error) throw error;
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error(err);
+    console.error('Supabase upsert error:', err);
     return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
   }
 }
