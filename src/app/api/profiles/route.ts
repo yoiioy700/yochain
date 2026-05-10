@@ -30,8 +30,15 @@ export async function GET() {
 // POST /api/profiles — upsert a profile by username
 export async function POST(req: NextRequest) {
   try {
+    // Debug: log env vars presence
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    console.log('[profiles POST] SUPABASE_URL set:', !!supabaseUrl);
+    console.log('[profiles POST] SUPABASE_ANON_KEY set:', !!supabaseKey);
+
     const body = await req.json();
     const { username, name, role, photo, ecosystems, focus, available, score, gh, tw, sol, profileUrl, savedAt } = body;
+    console.log('[profiles POST] username:', username);
 
     if (!username) {
       return NextResponse.json({ error: 'username is required' }, { status: 400 });
@@ -61,8 +68,8 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json({ ok: true });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Supabase upsert error:', err);
-    return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save profile', detail: err?.message || String(err) }, { status: 500 });
   }
 }
