@@ -689,7 +689,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
           {/* Share on X with Solana Blinks */}
           {data.sol && (() => {
             const blinkUrl = `https://dial.to/?action=solana-action:${encodeURIComponent(`${window?.location?.origin||''}/api/actions/tip/${data.sol}`)}`;
-            const tweetText = `Check out my onchain profile on YoChain!\n\nYou can tip me SOL directly from X using Solana Blinks ⚡`;
+            const tweetText = `I just minted my onchain identity as a Web3 builder on @YoChain_\n\nVerified on Solana. No resume needed — just vibes & code.\n\nTip me SOL directly from this tweet ⚡ (Solana Blinks)`;
             const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(blinkUrl)}`;
             return (
               <a href={shareUrl} target="_blank" rel="noreferrer" style={{fontSize:'0.75rem',padding:'0.75rem 1.25rem',background:'#000',color:'#fff',fontWeight:700,border:'1px solid #333',cursor:'pointer',fontFamily:"'JetBrains Mono', monospace",textTransform:'uppercase',textDecoration:'none',display:'flex',alignItems:'center',gap:'0.5rem'}}>
