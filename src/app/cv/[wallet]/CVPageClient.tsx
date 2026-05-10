@@ -539,6 +539,34 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
     }catch(e){console.error(e); setIsLoadingScore(false);}
   },[]);
 
+  // After GitHub + Solana data load, update score in Supabase
+  useEffect(() => {
+    if (isLoadingScore || !data) return;
+    const username = data.gh || wallet;
+    if (!username) return;
+    const score = Math.round(
+      (solData?.totalTransactions||0) * 0.04 +
+      (ghData?.stats?.totalStars||0) * 2 +
+      (ghData?.user?.publicRepos||0) * 1 +
+      (data.tw ? 50 : 0) +
+      (parseProjects(data.proj).length) * 20
+    );
+    fetch('/api/profiles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        name: data.n, role: data.r, photo: data.p,
+        ecosystems: data.eco ? data.eco.split(',').map((s:string)=>s.trim()).filter(Boolean) : [],
+        focus: data.foc ? data.foc.split(',').map((s:string)=>s.trim()).filter(Boolean) : [],
+        available: data.avail === '1', score,
+        gh: data.gh||'', tw: data.tw||'', sol: data.sol||'',
+        profileUrl: window.location.href,
+        savedAt: new Date().toISOString(),
+      }),
+    }).catch(()=>{});
+  }, [isLoadingScore]);
+
   if(!data) return <div style={{textAlign:'center',marginTop:'5rem',fontFamily:'monospace',color:'#888'}}>INITIALIZING_ONCHAIN_DATA...</div>;
 
   const isDark   = true;
@@ -657,7 +685,19 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       )}
 
       <div className="no-print" style={{background:'#050505',borderBottom:'1px solid #222',padding:'1rem 0'}}>
-        <div className="container" style={{display:'flex',justifyContent:'flex-end',gap:'1rem'}}>
+        <div className="container" style={{display:'flex',justifyContent:'flex-end',gap:'1rem',flexWrap:'wrap'}}>
+          {/* Share on X with Solana Blinks */}
+          {data.sol && (() => {
+            const blinkUrl = `https://dial.to/?action=solana-action:${encodeURIComponent(`${window?.location?.origin||''}/api/actions/tip/${data.sol}`)}`;
+            const tweetText = `Check out my onchain profile on YoChain!\n\nYou can tip me SOL directly from X using Solana Blinks ⚡`;
+            const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(blinkUrl)}`;
+            return (
+              <a href={shareUrl} target="_blank" rel="noreferrer" style={{fontSize:'0.75rem',padding:'0.75rem 1.25rem',background:'#000',color:'#fff',fontWeight:700,border:'1px solid #333',cursor:'pointer',fontFamily:"'JetBrains Mono', monospace",textTransform:'uppercase',textDecoration:'none',display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                SHARE BLINK
+              </a>
+            );
+          })()}
           <button onClick={() => setShowTipModal(true)} style={{fontSize:'0.75rem',padding:'0.75rem 1.25rem',background:'transparent',color:'#14F195',fontWeight:700,border:'1px solid #14F195',cursor:'pointer',fontFamily:"'JetBrains Mono', monospace",textTransform:'uppercase'}}>
             TIP DEVELOPER
           </button>
