@@ -5,6 +5,59 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Nav from '@/components/Nav';
 import Link from 'next/link';
 
+// Fetch the saved profile URL from Supabase for a given NFT asset
+function ViewProfileButton({ asset }: { asset: any }) {
+  const [profileUrl, setProfileUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Try to get username from NFT metadata json_uri
+    const jsonUri = asset.content?.json_uri || '';
+    try {
+      const url = new URL(jsonUri);
+      const gh = url.searchParams.get('gh') || url.searchParams.get('u') || '';
+      const d  = url.searchParams.get('d')  || '';
+      if (gh) {
+        // Build direct CV link from NFT metadata params
+        setProfileUrl(d ? `/cv/${gh}?d=${d}` : `/cv/${gh}`);
+        return;
+      }
+    } catch (_) {}
+
+    // Fallback: lookup from Supabase profiles table
+    fetch('/api/profiles')
+      .then(r => r.json())
+      .then((profiles: any[]) => {
+        if (profiles.length > 0) {
+          // Match by NFT name "YoChain ID: <name>"
+          const nftName = (asset.content?.metadata?.name || '').replace('YoChain ID: ', '').toLowerCase().trim();
+          const match = profiles.find(p =>
+            p.name?.toLowerCase().trim() === nftName ||
+            p.username?.toLowerCase().trim() === nftName
+          );
+          if (match?.profileUrl) setProfileUrl(match.profileUrl);
+          else if (profiles[0]?.profileUrl) setProfileUrl(profiles[0].profileUrl);
+        }
+      })
+      .catch(() => {});
+  }, [asset]);
+
+  if (!profileUrl) return null;
+
+  return (
+    <Link
+      href={profileUrl}
+      className="btn"
+      style={{
+        width: '100%', textAlign: 'center', fontSize: '0.8rem', padding: '0.6rem',
+        background: '#14F195', color: '#000', fontWeight: 700, border: 'none',
+        display: 'block',
+      }}
+    >
+      View My Profile ↗
+    </Link>
+  );
+}
+
 export default function ProfilePage() {
   const { publicKey, connected } = useWallet();
   const [identities, setIdentities] = useState<any[]>([]);
@@ -158,11 +211,24 @@ export default function ProfilePage() {
               const jsonUri = asset.content?.json_uri;
               let imgUrl = asset.content?.links?.image || asset.content?.files?.[0]?.uri;
               
-              if ((!imgUrl || imgUrl === jsonUri) && jsonUri) {
+              // Extract profile URL from NFT metadata json_uri
+              let profileUrl: string | null = null;
+              if (jsonUri) {
                 try {
                   const urlObj = new URL(jsonUri);
+                  // The metadata URL itself is the profile URL (it's a /api/metadata route)
+                  // Try to reconstruct the CV url from params
                   if (urlObj.searchParams.has('p')) {
-                    imgUrl = urlObj.searchParams.get('p');
+                    imgUrl = imgUrl || urlObj.searchParams.get('p');
+                  }
+                  // Check if the json_uri points to our /api/metadata endpoint
+                  if (urlObj.pathname.startsWith('/api/metadata')) {
+                    // Build the CV URL from the same query params
+                    const cvParams = new URLSearchParams(urlObj.search);
+                    const username = cvParams.get('gh') || cvParams.get('u') || cvParams.get('n') || '';
+                    if (username) profileUrl = `/cv/${username}?d=${cvParams.get('d') || ''}`;
+                    // Also try direct reconstruction
+                    if (!profileUrl) profileUrl = jsonUri.replace('/api/metadata', '/cv/').split('?')[0];
                   }
                 } catch(e) {}
               }
@@ -189,6 +255,8 @@ export default function ProfilePage() {
                     <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: '#fff' }}>{name}</h3>
                     
                     <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {/* View Profile — main CTA */}
+                      <ViewProfileButton asset={asset} />
                       <a href={`https://explorer.solana.com/address/${asset.id}?cluster=devnet`} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: '100%', textAlign: 'center', fontSize: '0.8rem', padding: '0.5rem' }}>
                         View on Explorer ↗
                       </a>
