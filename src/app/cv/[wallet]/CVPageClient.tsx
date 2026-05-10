@@ -430,9 +430,10 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
         .use(walletAdapterIdentity(walletAdapter))
         .use(mplCore());
 
-      // URI must be a full valid URL — use a real metadata endpoint
+      // URI must be a full valid URL — include gh & d so My Profile can reconstruct the CV link
       const baseUrl = window.location.origin;
-      const uri = `${baseUrl}/api/mint/metadata?n=${encodeURIComponent(data?.n || 'Builder')}&r=${encodeURIComponent(data?.r || 'Web3 Dev')}&p=${encodeURIComponent(data?.p || '')}`;
+      const d = new URLSearchParams(window.location.search).get('d') || '';
+      const uri = `${baseUrl}/api/mint/metadata?n=${encodeURIComponent(data?.n || 'Builder')}&r=${encodeURIComponent(data?.r || 'Web3 Dev')}&p=${encodeURIComponent(data?.p || '')}&gh=${encodeURIComponent(data?.gh || '')}&d=${encodeURIComponent(d)}`;
       const name = `YoChain ID: ${data?.n || 'Builder'}`;
 
       console.log('[Mint] Name:', name);
@@ -510,6 +511,31 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       if(decoded.sol) promises.push(fetch(`/api/solana?wallet=${decoded.sol}`).then(r=>r.json()).then(setSolData).catch(console.error));
       
       Promise.allSettled(promises).then(() => setIsLoadingScore(false));
+
+      // Auto-save to Supabase so leaderboard & profile page work
+      const username = decoded.gh || wallet;
+      if (username) {
+        const profileUrl = window.location.href;
+        fetch('/api/profiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            name: decoded.n,
+            role: decoded.r,
+            photo: decoded.p,
+            ecosystems: decoded.eco ? decoded.eco.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+            focus: decoded.foc ? decoded.foc.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+            available: decoded.avail === '1',
+            score: 0,
+            gh: decoded.gh || '',
+            tw: decoded.tw || '',
+            sol: decoded.sol || '',
+            profileUrl,
+            savedAt: new Date().toISOString(),
+          }),
+        }).catch(() => {});
+      }
     }catch(e){console.error(e); setIsLoadingScore(false);}
   },[]);
 
