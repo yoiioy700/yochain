@@ -50,33 +50,62 @@ const SUGGESTIONS_PROJECT_TECH = [
   'GraphQL', 'PostgreSQL', 'Docker', 'Figma'
 ];
 
-interface Entry { date: string; title: string; }
+interface Entry { date: string; title: string; startDate?: string; endDate?: string; current?: boolean; }
 interface ProjectEntry { name: string; desc: string; url: string; tech: string; touchedName?: boolean; touchedUrl?: boolean; }
 
-const emptyEntry = (): Entry => ({ date: '', title: '' });
+const emptyEntry = (): Entry => ({ date: '', title: '', startDate: '', endDate: '', current: false });
 const emptyProject = (): ProjectEntry => ({ name: '', desc: '', url: '', tech: '', touchedName: false, touchedUrl: false });
 
 // ─── EntryList MUST be outside BuilderPage to avoid re-mount on every keystroke ───
-function EntryList({ label, entries, setter, datePlaceholder, titlePlaceholder }: {
+function EntryList({ label, entries, setter, titlePlaceholder }: {
   label: string; entries: Entry[];
   setter: React.Dispatch<React.SetStateAction<Entry[]>>;
-  datePlaceholder: string; titlePlaceholder: string;
+  titlePlaceholder: string;
 }) {
   const add    = () => setter(prev => [...prev, emptyEntry()]);
   const remove = (i: number) => setter(prev => prev.filter((_, idx) => idx !== i));
-  const update = (i: number, field: keyof Entry, val: string) =>
-    setter(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: val } : e));
+  const update = (i: number, field: keyof Entry, val: any) => {
+    setter(prev => prev.map((e, idx) => {
+      if (idx !== i) return e;
+      const newE = { ...e, [field]: val };
+      if (field === 'startDate' || field === 'endDate' || field === 'current') {
+         const startYear = newE.startDate ? newE.startDate.split('-')[0] : '';
+         const endYear = newE.endDate ? newE.endDate.split('-')[0] : '';
+         if (newE.current) newE.date = startYear ? `${startYear}-Now` : 'Now';
+         else if (startYear && endYear) newE.date = `${startYear}-${endYear}`;
+         else if (startYear) newE.date = startYear;
+         else newE.date = '';
+      }
+      return newE;
+    }));
+  };
+  
   return (
     <div className="form-group" style={{ marginBottom: '2rem' }}>
       <label className="form-label">{label}</label>
       {entries.map((entry, i) => (
-        <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 40px', gap: '1px', marginBottom: '1rem', alignItems: 'start', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
-          <input type="text" className="form-input" placeholder={datePlaceholder} value={entry.date}
-            onChange={e => update(i, 'date', e.target.value)}
-            style={{ fontSize: '0.85rem', padding: '0.75rem', height: '100%', border: 'none', borderBottom: 'none' }} />
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '200px 1fr 40px', gap: '1px', marginBottom: '1rem', alignItems: 'start', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', background: '#0a0a0a', height: '100%', borderRight: '1px solid var(--border-color)' }}>
+             <label style={{ fontSize: '0.65rem', color: '#666', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Start Date</label>
+             <input type="month" className="form-input" style={{ fontSize: '0.85rem', padding: '0.5rem', border: '1px solid #222', marginBottom: '0.75rem', background: '#000', colorScheme: 'dark', color: '#fff' }} 
+                    value={entry.startDate || ''} onChange={e => update(i, 'startDate', e.target.value)} />
+             
+             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+               <input type="checkbox" checked={entry.current || false} onChange={e => update(i, 'current', e.target.checked)} id={`curr-${label}-${i}`} style={{ accentColor: '#14F195', width: '16px', height: '16px' }} />
+               <label htmlFor={`curr-${label}-${i}`} style={{ fontSize: '0.75rem', color: '#aaa', cursor: 'pointer' }}>Present (Now)</label>
+             </div>
+             
+             {!entry.current && (
+               <>
+                 <label style={{ fontSize: '0.65rem', color: '#666', marginBottom: '0.4rem', marginTop: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>End Date</label>
+                 <input type="month" className="form-input" style={{ fontSize: '0.85rem', padding: '0.5rem', border: '1px solid #222', background: '#000', colorScheme: 'dark', color: '#fff' }} 
+                        value={entry.endDate || ''} onChange={e => update(i, 'endDate', e.target.value)} />
+               </>
+             )}
+          </div>
           <textarea className="form-input" placeholder={titlePlaceholder} value={entry.title}
             onChange={e => update(i, 'title', e.target.value)}
-            style={{ fontSize: '0.85rem', padding: '0.75rem', minHeight: '60px', resize: 'none', border: 'none', borderBottom: 'none' }} />
+            style={{ fontSize: '0.85rem', padding: '0.75rem', minHeight: '140px', resize: 'none', border: 'none', borderBottom: 'none', height: '100%' }} />
           <button onClick={() => remove(i)}
             style={{ background: '#0a0a0a', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem', height: '100%', transition: 'color 0.2s' }}
             onMouseOver={e => e.currentTarget.style.color = '#fff'}
@@ -337,15 +366,36 @@ export default function BuilderPage() {
                       <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const formData = new FormData();
-                        formData.append('file', file);
                         const label = e.target.parentElement;
                         if(label) label.style.opacity = '0.5';
                         try {
+                          // Compress image client-side before upload (stay under Vercel 4.5MB limit)
+                          const compressedBlob = await new Promise<Blob>((resolve, reject) => {
+                            const img = new Image();
+                            const url = URL.createObjectURL(file);
+                            img.onload = () => {
+                              URL.revokeObjectURL(url);
+                              const MAX = 800;
+                              let { width, height } = img;
+                              if (width > MAX || height > MAX) {
+                                if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+                                else { width = Math.round(width * MAX / height); height = MAX; }
+                              }
+                              const canvas = document.createElement('canvas');
+                              canvas.width = width;
+                              canvas.height = height;
+                              canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+                              canvas.toBlob(b => b ? resolve(b) : reject(new Error('compression failed')), 'image/jpeg', 0.75);
+                            };
+                            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')); };
+                            img.src = url;
+                          });
+                          const formData = new FormData();
+                          formData.append('file', compressedBlob, 'photo.jpg');
                           const res = await fetch('/api/upload', { method: 'POST', body: formData });
                           const data = await res.json();
                           if (data.url) setPhotoUrl(data.url);
-                          else alert('Upload failed');
+                          else alert('Upload failed: ' + (data.error || 'unknown error'));
                         } catch (err) {
                           alert('Upload failed');
                         } finally {
