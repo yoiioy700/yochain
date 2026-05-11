@@ -1,64 +1,58 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Nav from '@/components/Nav';
 import Link from 'next/link';
 
-// Fetch the saved profile URL from Supabase for a given NFT asset
-function ViewProfileButton({ asset }: { asset: any }) {
-  const [profileUrl, setProfileUrl] = useState<string | null>(null);
+// Show "View My Profile" button — uses session github username as source of truth
+function ViewProfileButton({ asset, sessionGh }: { asset: any; sessionGh: string }) {
+  // If we have the session's GitHub username, build URL directly — most reliable
+  if (sessionGh) {
+    return (
+      <Link
+        href={`/cv/${sessionGh}`}
+        className="btn"
+        style={{
+          width: '100%', textAlign: 'center', fontSize: '0.8rem', padding: '0.6rem',
+          background: '#14F195', color: '#000', fontWeight: 700, border: 'none',
+          display: 'block',
+        }}
+      >
+        View My Profile ↗
+      </Link>
+    );
+  }
 
-  useEffect(() => {
-    // Try to get username (gh) from NFT metadata json_uri
-    const jsonUri = asset.content?.json_uri || '';
-    let ghFromNft = '';
-    try {
-      const url = new URL(jsonUri);
-      ghFromNft = url.searchParams.get('gh') || url.searchParams.get('u') || '';
-      // If we have gh, build URL directly — no need for 'd' param anymore
-      if (ghFromNft) {
-        setProfileUrl(`/cv/${ghFromNft}`);
-        return;
-      }
-    } catch (_) {}
+  // Fallback: try gh param from NFT URI
+  const jsonUri = asset.content?.json_uri || '';
+  try {
+    const url = new URL(jsonUri);
+    const gh = url.searchParams.get('gh') || url.searchParams.get('u') || '';
+    if (gh) {
+      return (
+        <Link
+          href={`/cv/${gh}`}
+          className="btn"
+          style={{
+            width: '100%', textAlign: 'center', fontSize: '0.8rem', padding: '0.6rem',
+            background: '#14F195', color: '#000', fontWeight: 700, border: 'none',
+            display: 'block',
+          }}
+        >
+          View My Profile ↗
+        </Link>
+      );
+    }
+  } catch (_) {}
 
-    // Fallback: lookup from Supabase by NFT name match
-    fetch('/api/profiles')
-      .then(r => r.json())
-      .then((profiles: any[]) => {
-        if (profiles.length > 0) {
-          // Match by NFT name "YoChain ID: <name>"
-          const nftName = (asset.content?.metadata?.name || '').replace('YoChain ID: ', '').toLowerCase().trim();
-          const match = profiles.find(p =>
-            p.name?.toLowerCase().trim() === nftName ||
-            p.username?.toLowerCase().trim() === nftName
-          );
-          if (match?.profileUrl) setProfileUrl(match.profileUrl);
-          // Do NOT fall back to profiles[0] — that could be someone else's profile
-        }
-      })
-      .catch(() => {});
-  }, [asset]);
-
-  if (!profileUrl) return null;
-
-  return (
-    <Link
-      href={profileUrl}
-      className="btn"
-      style={{
-        width: '100%', textAlign: 'center', fontSize: '0.8rem', padding: '0.6rem',
-        background: '#14F195', color: '#000', fontWeight: 700, border: 'none',
-        display: 'block',
-      }}
-    >
-      View My Profile ↗
-    </Link>
-  );
+  return null;
 }
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
+  const sessionGh = (session?.user as any)?.login || (session?.user as any)?.username || '';
   const { publicKey, connected } = useWallet();
   const [identities, setIdentities] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -101,14 +95,25 @@ export default function ProfilePage() {
         
         const assets = data.result?.items || [];
         
-        // Filter for YoChain Identity NFTs
+        // Filter: only YoChain NFTs that belong to THIS user (by session github username)
+        // This prevents showing old test NFTs minted by other accounts on the same wallet
         const yochainAssets = assets.filter((asset: any) => {
           const name = asset.content?.metadata?.name || '';
-          return name.startsWith('YoChain ID');
+          if (!name.startsWith('YoChain ID')) return false;
+          // If we have a session username, further filter by gh param in json_uri
+          if (sessionGh) {
+            try {
+              const uri = asset.content?.json_uri || '';
+              const uriObj = new URL(uri);
+              const ghInNft = uriObj.searchParams.get('gh') || uriObj.searchParams.get('u') || '';
+              // Only include if gh matches session user OR if no gh in URI (older NFT format)
+              return ghInNft === sessionGh || ghInNft === '';
+            } catch { return true; } // If URI is unparseable, include it
+          }
+          return true;
         });
 
-        // Show most recently minted NFT first (reverse chronological)
-        // Helius returns oldest first, so we reverse then take the latest
+        // Show most recently minted NFT first (Helius returns oldest first, so reverse)
         setIdentities(yochainAssets.reverse().slice(0, 1));
       } catch (err: any) {
         console.error('Error fetching assets:', err);
@@ -257,7 +262,7 @@ export default function ProfilePage() {
                     
                     <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {/* View Profile — main CTA */}
-                      <ViewProfileButton asset={asset} />
+                      <ViewProfileButton asset={asset} sessionGh={sessionGh} />
                       <a href={`https://explorer.solana.com/address/${asset.id}?cluster=devnet`} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: '100%', textAlign: 'center', fontSize: '0.8rem', padding: '0.5rem' }}>
                         View on Explorer ↗
                       </a>
