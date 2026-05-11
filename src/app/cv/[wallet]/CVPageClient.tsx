@@ -480,6 +480,23 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       return;
     }
 
+    // Guard: 1 GitHub account = 1 YoChain Identity
+    // Check if this GitHub user already minted with a different wallet
+    if (data?.gh) {
+      try {
+        const existingRes = await fetch(`/api/profiles?username=${data.gh}`);
+        const existing = await existingRes.json();
+        if (existing?.sol && existing.sol !== walletAdapter.publicKey.toBase58()) {
+          showAlert(
+            "Identity Already Exists",
+            `Your GitHub account (@${data.gh}) already has a YoChain Identity minted to wallet:\n${existing.sol}\n\nEach GitHub account can only have 1 YoChain ID. Connect that wallet to view your identity.`,
+            "error"
+          );
+          return;
+        }
+      } catch { /* If check fails, allow mint to proceed */ }
+    }
+
     try {
       setIsMinting(true);
 
@@ -534,6 +551,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       setIsMinting(false);
     }
   };
+
 
 
   const [downloading, setDownloading] = useState(false);
