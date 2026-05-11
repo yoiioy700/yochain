@@ -1,17 +1,18 @@
 import { NextRequest } from 'next/server';
 import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse } from '@solana/actions';
 import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-function getProfile(username: string) {
-  const PROFILES_FILE = path.join(process.cwd(), 'data', 'profiles.json');
+async function getProfile(username: string) {
   try {
-    const raw = fs.readFileSync(PROFILES_FILE, 'utf-8');
-    const profiles = JSON.parse(raw);
-    return profiles.find((p: any) => p.username === username || p.sol === username);
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .or(`username.eq.${username},sol.eq.${username}`)
+      .single();
+    return data;
   } catch {
     return null;
   }
@@ -20,7 +21,7 @@ function getProfile(username: string) {
 export async function GET(req: NextRequest, { params }: { params: Promise<{ wallet: string }> }) {
   try {
     const { wallet: username } = await params;
-    const profile = getProfile(username);
+    const profile = await getProfile(username);
     
     const title = profile?.name ? `Tip ${profile.name}` : "Tip Developer";
     
@@ -74,7 +75,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ wall
 export async function POST(req: NextRequest, { params }: { params: Promise<{ wallet: string }> }) {
   try {
     const { wallet: username } = await params;
-    const profile = getProfile(username);
+    const profile = await getProfile(username);
     
     let recipientPubkey: PublicKey;
     try {
