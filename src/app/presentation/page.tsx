@@ -241,7 +241,7 @@ export default function Presentation() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return;
       
-      if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
         if (currentSlide < slides.length - 1) changeSlide(currentSlide + 1);
       } else if (e.key === 'ArrowLeft') {
         if (currentSlide > 0) changeSlide(currentSlide - 1);
