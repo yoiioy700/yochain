@@ -556,40 +556,100 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
   const [downloading, setDownloading] = useState(false);
 
-  const downloadPDF = async () => {
-    const el = document.getElementById('cv-content');
-    if (!el) return;
+  const downloadPDF = () => {
     setDownloading(true);
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      const { jsPDF } = await import('jspdf');
-      
-      const canvas = await html2canvas(el,{
-        scale:2,
-        useCORS:true,
-        allowTaint:true,
-        backgroundColor:'#000000',
-        windowWidth: 1200, // Enforce a standard desktop width
-        logging:false,
-        imageTimeout:15000,
-        onclone: (clonedDoc) => {
-          // Apply 'export-mode' to fix clamp() and unsupported CSS in html2canvas
-          const clonedEl = clonedDoc.getElementById('cv-content');
-          if (clonedEl) {
-            clonedEl.classList.add('export-mode');
-          }
+
+    // Inject a comprehensive print stylesheet for clean PDF output
+    const styleId = 'yochain-print-style';
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    style.textContent = `
+      @media print {
+        /* Hide everything except CV content */
+        nav, .no-print, [style*="position: fixed"], [style*="position:fixed"] { display: none !important; }
+        
+        /* Reset page to white for print */
+        html, body { background: #fff !important; margin: 0; padding: 0; }
+        
+        /* CV content full width */
+        #cv-content {
+          background: #fff !important;
+          color: #111 !important;
+          min-height: auto !important;
+          width: 100% !important;
+          box-shadow: none !important;
         }
-      });
-      
-      const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height*pdfW)/canvas.width;
-      pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',0,0,pdfW,pdfH);
-      const url = URL.createObjectURL(pdf.output('blob'));
-      window.open(url,'_blank');
-      setTimeout(()=>URL.revokeObjectURL(url),10000);
-    } catch(err){ console.error(err); showAlert("PDF Error", "Gagal generate PDF.", "error"); }
-    finally { setDownloading(false); }
+        
+        /* Hide decorative elements */
+        .bg-grid, .orb-1, .orb-2 { display: none !important; }
+        
+        /* Stop all animations */
+        * { animation: none !important; transition: none !important; }
+        
+        /* Fix text colors for white background */
+        h1, h2, h3, h4 { color: #000 !important; -webkit-text-fill-color: #000 !important; }
+        p, div, span { color: #333 !important; }
+        
+        /* Score: keep as accent color */
+        .score-glow { 
+          color: #14F195 !important; 
+          -webkit-text-fill-color: #14F195 !important; 
+          background: none !important;
+          text-shadow: none !important;
+        }
+        
+        /* Profile image */
+        .profile-img { 
+          filter: none !important; 
+          mix-blend-mode: normal !important; 
+          opacity: 1 !important;
+        }
+        
+        /* Borders */
+        [style*="border-bottom: 1px solid #111"], 
+        [style*="border: 1px solid #111"],
+        [style*="border-right: 1px solid #111"] {
+          border-color: #ddd !important;
+        }
+        
+        /* Backgrounds */
+        [style*="background: #000"], [style*="background:#000"],
+        [style*="background: rgba(5,5,5"], [style*="background: rgba(10,10,10"] {
+          background: #fff !important;
+        }
+        
+        /* Labels */
+        .neo-label { color: #888 !important; }
+        .neo-link { color: #333 !important; border-color: #ccc !important; }
+        
+        /* Glass badges */
+        .glass-badge {
+          background: #f5f5f5 !important;
+          border: 1px solid #ddd !important;
+          color: #555 !important;
+          backdrop-filter: none !important;
+        }
+        
+        /* Page break settings */
+        section, .cv-hero-grid { page-break-inside: avoid; }
+        
+        /* Adjust font sizes for print */
+        h1 { font-size: 48pt !important; }
+        
+        /* Bottom action bar hidden */
+        [style*="position: fixed"][style*="bottom: 0"] { display: none !important; }
+      }
+    `;
+
+    // Wait a tick then print
+    setTimeout(() => {
+      window.print();
+      setDownloading(false);
+    }, 300);
   };
 
   const parseList = (str?:string) => !str ? [] : str.split(',').filter(s=>s.trim()).map(s=>s.trim());
@@ -882,7 +942,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
             TIP DEVELOPER
           </button>
           <button onClick={downloadPDF} disabled={downloading} style={{fontSize:'0.75rem',padding:'0.75rem 1.25rem',background:'transparent',color:'#aaa',border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer',fontFamily:"'JetBrains Mono', monospace",textTransform:'uppercase', borderRadius:'100px', transition:'all 0.2s'}} onMouseEnter={(e)=>{e.currentTarget.style.color='#fff'; e.currentTarget.style.borderColor='rgba(255,255,255,0.3)'}} onMouseLeave={(e)=>{e.currentTarget.style.color='#aaa'; e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}}>
-            {downloading?'GENERATING...':'DOWNLOAD PDF'}
+            {downloading?'PREPARING...':'SAVE AS PDF'}
           </button>
         </div>
       </div>
