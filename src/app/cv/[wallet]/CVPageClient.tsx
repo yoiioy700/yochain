@@ -728,7 +728,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
               eco: Array.isArray(profile.ecosystems) ? profile.ecosystems.join(',') : '',
               foc: Array.isArray(profile.focus) ? profile.focus.join(',') : '',
               avail: profile.available ? '1' : '0',
-              skl: '', exp: '', edu: '', proj: '', cert: '', lang: '', web: '',
+              skl: '', exp: '', edu: '', proj: '', cert: '', lang: '', web: '', e: '',
             });
             const promises = [];
             if (profile.gh || profile.username) {
@@ -928,8 +928,9 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
           <div style={{flex:1}}></div>
           {/* Share on X with Solana Blinks */}
           {data.sol && (() => {
-            const blinkUrl = `https://dial.to/?action=solana-action:${encodeURIComponent(`https://yochain.tech/api/actions/tip/${data.sol}`)}`;
-            const tweetText = `I just minted my onchain identity as a Web3 builder on yochain.tech\n\nVerified on Solana. No resume needed — just vibes & code.\n\nTip me SOL directly from this tweet ⚡ (Solana Blinks)`;
+            const origin = window.location.origin; // e.g. https://www.yochain.tech
+            const blinkUrl = `https://dial.to/?action=solana-action:${encodeURIComponent(`${origin}/api/actions/tip/${data.sol}`)}`;
+            const tweetText = `I just minted my onchain identity as a Web3 builder on ${origin}\n\nVerified on Solana. No resume needed — just vibes & code.\n\nTip me SOL directly from this tweet ⚡ (Solana Blinks)`;
             const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(blinkUrl)}`;
             return (
               <a href={shareUrl} target="_blank" rel="noreferrer" style={{fontSize:'0.75rem',padding:'0.75rem 1.25rem',background:'rgba(153,69,255,0.1)',color:'#9945FF',fontWeight:700,border:'1px solid rgba(153,69,255,0.3)',cursor:'pointer',fontFamily:"'JetBrains Mono', monospace",textTransform:'uppercase',textDecoration:'none',display:'flex',alignItems:'center',gap:'0.5rem', borderRadius:'100px', transition:'all 0.2s'}} onMouseEnter={(e)=>e.currentTarget.style.background='rgba(153,69,255,0.2)'} onMouseLeave={(e)=>e.currentTarget.style.background='rgba(153,69,255,0.1)'}>
