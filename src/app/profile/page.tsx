@@ -106,9 +106,9 @@ export default function ProfilePage() {
               const uri = asset.content?.json_uri || '';
               const uriObj = new URL(uri);
               const ghInNft = uriObj.searchParams.get('gh') || uriObj.searchParams.get('u') || '';
-              // Only include if gh matches session user OR if no gh in URI (older NFT format)
-              return ghInNft === sessionGh || ghInNft === '';
-            } catch { return true; } // If URI is unparseable, include it
+              // Strict match: only show NFTs minted by this GitHub user
+              return ghInNft === sessionGh;
+            } catch { return false; } // If URI is unparseable, exclude it
           }
           return true;
         });
