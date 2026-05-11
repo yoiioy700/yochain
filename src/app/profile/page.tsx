@@ -10,20 +10,20 @@ function ViewProfileButton({ asset }: { asset: any }) {
   const [profileUrl, setProfileUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // Try to get username from NFT metadata json_uri
+    // Try to get username (gh) from NFT metadata json_uri
     const jsonUri = asset.content?.json_uri || '';
+    let ghFromNft = '';
     try {
       const url = new URL(jsonUri);
-      const gh = url.searchParams.get('gh') || url.searchParams.get('u') || '';
-      const d  = url.searchParams.get('d')  || '';
-      if (gh && d) {
-        // Build direct CV link from NFT metadata params
-        setProfileUrl(`/cv/${gh}?d=${d}`);
+      ghFromNft = url.searchParams.get('gh') || url.searchParams.get('u') || '';
+      // If we have gh, build URL directly — no need for 'd' param anymore
+      if (ghFromNft) {
+        setProfileUrl(`/cv/${ghFromNft}`);
         return;
       }
     } catch (_) {}
 
-    // Fallback: lookup from Supabase profiles table
+    // Fallback: lookup from Supabase by NFT name match
     fetch('/api/profiles')
       .then(r => r.json())
       .then((profiles: any[]) => {
@@ -35,7 +35,7 @@ function ViewProfileButton({ asset }: { asset: any }) {
             p.username?.toLowerCase().trim() === nftName
           );
           if (match?.profileUrl) setProfileUrl(match.profileUrl);
-          else if (profiles[0]?.profileUrl) setProfileUrl(profiles[0].profileUrl);
+          // Do NOT fall back to profiles[0] — that could be someone else's profile
         }
       })
       .catch(() => {});
@@ -107,8 +107,9 @@ export default function ProfilePage() {
           return name.startsWith('YoChain ID');
         });
 
-        // Hide duplicates from previous mints by only showing the first one
-        setIdentities(yochainAssets.slice(0, 1));
+        // Show most recently minted NFT first (reverse chronological)
+        // Helius returns oldest first, so we reverse then take the latest
+        setIdentities(yochainAssets.reverse().slice(0, 1));
       } catch (err: any) {
         console.error('Error fetching assets:', err);
         setError(err.message || 'Failed to load your identities');
