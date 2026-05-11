@@ -654,6 +654,31 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
               console.error("Failed to parse db profileUrl", e);
             }
           }
+          // Fallback: if no ?d= in profileUrl (or no profileUrl at all),
+          // build CVData directly from Supabase fields so the page still loads
+          if (profile && (profile.name || profile.username)) {
+            setData({
+              n: profile.name || profile.username || wallet,
+              r: profile.role || 'Web3 Developer',
+              p: profile.photo || '',
+              sol: profile.sol || '',
+              gh: profile.gh || profile.username || wallet,
+              tw: profile.tw || '',
+              b: '',
+              eco: Array.isArray(profile.ecosystems) ? profile.ecosystems.join(',') : '',
+              foc: Array.isArray(profile.focus) ? profile.focus.join(',') : '',
+              avail: profile.available ? '1' : '0',
+              skl: '', exp: '', edu: '', proj: '', cert: '', lang: '', web: '',
+            });
+            const promises = [];
+            if (profile.gh || profile.username) {
+              promises.push(fetch(`/api/github?username=${profile.gh || profile.username}`).then(r=>r.json()).then(setGhData).catch(console.error));
+            }
+            if (profile.sol) {
+              promises.push(fetch(`/api/solana?wallet=${profile.sol}`).then(r=>r.json()).then(setSolData).catch(console.error));
+            }
+            Promise.allSettled(promises).then(() => setIsLoadingScore(false));
+          }
         })
         .catch(console.error);
     }
@@ -683,13 +708,23 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
         focus: data.foc ? data.foc.split(',').map((s:string)=>s.trim()).filter(Boolean) : [],
         available: data.avail === '1', score,
         gh: data.gh||'', tw: data.tw||'', sol: data.sol||'',
-        profileUrl: window.location.href,
+        // Do NOT update profileUrl here — window.location.href may not have ?d= param
+        // profileUrl is only set when loading from the builder with a d= payload
         savedAt: new Date().toISOString(),
       }),
     }).catch(()=>{});
   }, [isLoadingScore]);
 
-  if(!data) return <div style={{textAlign:'center',marginTop:'5rem',fontFamily:'monospace',color:'#888'}}>INITIALIZING_ONCHAIN_DATA...</div>;
+  if(!data) return (
+    <div style={{textAlign:'center',marginTop:'5rem',fontFamily:'monospace',color:'#888'}}>
+      <div>INITIALIZING_ONCHAIN_DATA...</div>
+      <div style={{marginTop:'1rem',fontSize:'0.75rem',color:'#444'}}>
+        If this takes too long, the profile may not exist yet.
+        <br/>
+        <a href="/builders" style={{color:'#14F195',textDecoration:'none'}}>← Browse Builders</a>
+      </div>
+    </div>
+  );
 
   const isDark   = true;
   const c        = (dark:string,light:string) => dark;
