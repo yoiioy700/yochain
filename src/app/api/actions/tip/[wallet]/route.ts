@@ -18,16 +18,28 @@ async function getProfile(username: string) {
   }
 }
 
+// Blinks spec requires these headers in addition to CORS headers
+const BLINKS_HEADERS = {
+  ...ACTIONS_CORS_HEADERS,
+  'X-Action-Version': '2.1.3',
+  'X-Blockchain-Ids': 'solana:devnet',
+};
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ wallet: string }> }) {
   try {
     const { wallet: username } = await params;
     const profile = await getProfile(username);
     
-    const title = profile?.name ? `Tip ${profile.name}` : "Tip Developer";
+    // CRITICAL: hrefs must be ABSOLUTE URLs for dial.to / X Blinks to work
+    // dial.to makes server-side POST requests to these hrefs
+    const origin = new URL(req.url).origin;
+    const baseHref = `${origin}/api/actions/tip/${username}`;
+
+    const title = profile?.name ? `Tip ${profile.name}` : 'Tip Developer';
     
     let icon = profile?.photo || '';
     if (icon && icon.startsWith('/')) {
-      icon = new URL(icon, new URL(req.url).origin).toString();
+      icon = `${origin}${icon}`;
     } else if (!icon) {
       icon = `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`;
     }
@@ -35,40 +47,46 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ wall
     const payload: ActionGetResponse = {
       title,
       icon,
-      description: `Support this builder by sending a SOL tip directly to their wallet.`,
-      label: "Tip",
+      description: profile?.name
+        ? `Tip ${profile.name} — ${profile.role || 'Web3 Developer'} — directly on Solana.`
+        : 'Support this builder by sending a SOL tip directly to their wallet.',
+      label: 'Tip',
       links: {
         actions: [
           {
-            label: "0.1 SOL",
-            href: `/api/actions/tip/${username}?amount=0.1`,
+            type: 'transaction',
+            label: '0.1 SOL',
+            href: `${baseHref}?amount=0.1`,
           },
           {
-            label: "0.5 SOL",
-            href: `/api/actions/tip/${username}?amount=0.5`,
+            type: 'transaction',
+            label: '0.5 SOL',
+            href: `${baseHref}?amount=0.5`,
           },
           {
-            label: "1 SOL",
-            href: `/api/actions/tip/${username}?amount=1`,
+            type: 'transaction',
+            label: '1 SOL',
+            href: `${baseHref}?amount=1`,
           },
           {
-            label: "Send Tip",
-            href: `/api/actions/tip/${username}?amount={amount}`,
+            type: 'transaction',
+            label: 'Send Tip',
+            href: `${baseHref}?amount={amount}`,
             parameters: [
               {
-                name: "amount",
-                label: "Enter custom SOL amount",
-                required: true
-              }
-            ]
-          }
-        ]
-      }
+                name: 'amount',
+                label: 'Enter SOL amount',
+                required: true,
+              },
+            ],
+          },
+        ] as any,
+      },
     };
 
-    return Response.json(payload, { headers: ACTIONS_CORS_HEADERS });
+    return Response.json(payload, { headers: BLINKS_HEADERS });
   } catch (err) {
-    return Response.json({ error: "Failed to generate action" }, { status: 500, headers: ACTIONS_CORS_HEADERS });
+    return Response.json({ error: 'Failed to generate action' }, { status: 500, headers: BLINKS_HEADERS });
   }
 }
 
@@ -81,7 +99,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ wal
     try {
       recipientPubkey = new PublicKey(profile?.sol || username);
     } catch {
-      return Response.json({ error: "Invalid recipient address" }, { status: 400, headers: ACTIONS_CORS_HEADERS });
+      return Response.json({ error: 'Invalid recipient address' }, { status: 400, headers: BLINKS_HEADERS });
     }
 
     const body: ActionPostRequest = await req.json();
@@ -89,17 +107,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ wal
     try {
       account = new PublicKey(body.account);
     } catch (err) {
-      return Response.json({ error: 'Invalid "account" provided' }, { status: 400, headers: ACTIONS_CORS_HEADERS });
+      return Response.json({ error: 'Invalid "account" provided' }, { status: 400, headers: BLINKS_HEADERS });
     }
 
     const url = new URL(req.url);
     const amountParam = url.searchParams.get('amount') || '0.1';
     const amount = parseFloat(amountParam);
     if (isNaN(amount) || amount <= 0) {
-      return Response.json({ error: 'Invalid "amount" provided' }, { status: 400, headers: ACTIONS_CORS_HEADERS });
+      return Response.json({ error: 'Invalid "amount" provided' }, { status: 400, headers: BLINKS_HEADERS });
     }
 
-    const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.devnet.solana.com', 'confirmed');
+    const rpc = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.devnet.solana.com';
+    const connection = new Connection(rpc, 'confirmed');
     
     const tx = new Transaction().add(
       SystemProgram.transfer({
@@ -116,14 +135,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ wal
 
     const payload: ActionPostResponse = {
       transaction: serialized.toString('base64'),
-      message: `Sent ${amount} SOL to ${profile?.name || 'Developer'}!`
+      message: `Sent ${amount} SOL to ${profile?.name || 'Developer'}!`,
     };
 
-    return Response.json(payload, { headers: ACTIONS_CORS_HEADERS });
+    return Response.json(payload, { headers: BLINKS_HEADERS });
   } catch (err) {
     console.error(err);
-    return Response.json({ error: "Failed to create transaction" }, { status: 500, headers: ACTIONS_CORS_HEADERS });
+    return Response.json({ error: 'Failed to create transaction' }, { status: 500, headers: BLINKS_HEADERS });
   }
 }
 
-export const OPTIONS = async () => Response.json(null, { headers: ACTIONS_CORS_HEADERS });
+export const OPTIONS = async () => Response.json(null, { headers: BLINKS_HEADERS });
