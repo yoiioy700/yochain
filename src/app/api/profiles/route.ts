@@ -3,6 +3,20 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+// Strip any absolute domain from a profileUrl so it's always a relative path
+// e.g. "https://yochain.vercel.app/cv/foo?d=..." → "/cv/foo?d=..."
+function toRelativeUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    // If it's already relative, return as-is
+    if (url.startsWith('/')) return url;
+    const parsed = new URL(url);
+    return parsed.pathname + parsed.search + parsed.hash;
+  } catch {
+    return url;
+  }
+}
+
 // GET /api/profiles — return all profiles ordered by score, or a single profile by username
 export async function GET(req: NextRequest) {
   try {
@@ -22,7 +36,7 @@ export async function GET(req: NextRequest) {
       }
       return NextResponse.json({
         ...data,
-        profileUrl: data.profile_url,
+        profileUrl: toRelativeUrl(data.profile_url),
         savedAt: data.saved_at
       });
     }
@@ -37,7 +51,7 @@ export async function GET(req: NextRequest) {
     // Map snake_case DB columns → camelCase for frontend
     const mapped = (data || []).map((p: any) => ({
       ...p,
-      profileUrl: p.profile_url,
+      profileUrl: toRelativeUrl(p.profile_url),
       savedAt: p.saved_at,
     }));
 
