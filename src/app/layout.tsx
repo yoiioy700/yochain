@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { WalletContextProvider } from '@/components/WalletProvider';
 import { NextAuthProvider } from '@/components/NextAuthProvider';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: 'YoChain — Your Web3 Identity, Proven Onchain',
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NextAuthProvider>
           <WalletContextProvider>{children}</WalletContextProvider>
         </NextAuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
