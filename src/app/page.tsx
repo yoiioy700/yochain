@@ -1,19 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, useSession } from 'next-auth/react';
 import Nav from '@/components/Nav';
 
 export default function LandingPage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (session?.user) router.push('/builder');
-  }, [session, router]);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 100);
@@ -82,7 +76,7 @@ export default function LandingPage() {
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <button
                   id="hero-cta-github"
-                  onClick={() => signIn('github')}
+                  onClick={() => session?.user ? window.location.href = '/builder' : signIn('github')}
                   style={{
                     background: '#FF4400', color: '#fff',
                     border: 'none', borderRadius: '100px',
@@ -93,7 +87,7 @@ export default function LandingPage() {
                   onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
                   onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 >
-                  Start with GitHub →
+                  {session?.user ? 'Go to Builder →' : 'Start with GitHub →'}
                 </button>
                 <Link
                   href="/builders"
