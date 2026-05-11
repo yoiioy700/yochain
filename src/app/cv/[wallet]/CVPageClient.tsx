@@ -558,99 +558,165 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
   const downloadPDF = () => {
     setDownloading(true);
+    const parseList = (str?: string) => !str ? [] : str.split(',').filter(s => s.trim()).map(s => s.trim());
+    const parseProjects = (str?: string) => !str ? [] : str.split(';;').filter(Boolean).map(p => { const [n,d,u,t] = p.split('|'); return {name:n||'',desc:d||'',url:u||'',tech:t||''}; });
+    const expList = parseList(data?.exp);
+    const eduList = parseList(data?.edu);
+    const sklList = parseList(data?.skl);
+    const projects = parseProjects(data?.proj);
 
-    // Inject a comprehensive print stylesheet for clean PDF output
-    const styleId = 'yochain-print-style';
-    let style = document.getElementById(styleId) as HTMLStyleElement | null;
-    if (!style) {
-      style = document.createElement('style');
-      style.id = styleId;
-      document.head.appendChild(style);
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>${data?.n || 'YoChain CV'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Space Grotesk',sans-serif; color:#111; background:#fff; padding:40px; max-width:900px; margin:0 auto; }
+  
+  /* Header */
+  .header { display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:start; border-bottom:3px solid #000; padding-bottom:24px; margin-bottom:24px; }
+  .name { font-size:48px; font-weight:800; letter-spacing:-0.03em; line-height:0.9; text-transform:uppercase; }
+  .role { font-size:16px; color:#555; margin-top:8px; }
+  .photo-block { text-align:right; }
+  .photo { width:120px; height:120px; object-fit:cover; border-radius:4px; }
+  
+  /* Meta row */
+  .meta { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid #eee; }
+  .meta-item { font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .meta-label { color:#999; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:2px; }
+  .meta-val { color:#111; font-weight:700; }
+  
+  /* Score badge */
+  .score-badge { background:#000; color:#14F195; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; padding:6px 12px; display:inline-block; }
+  
+  /* Bio */
+  .bio { font-size:15px; color:#444; line-height:1.7; margin-bottom:24px; padding:16px; background:#f9f9f9; border-left:3px solid #000; }
+  
+  /* Sections */
+  .section { margin-bottom:28px; }
+  .section-title { font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.15em; color:#999; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .section-title::after { content:''; flex:1; height:1px; background:#eee; }
+  
+  /* 2-col layout */
+  .two-col { display:grid; grid-template-columns:2fr 1fr; gap:32px; }
+  
+  /* Experience */
+  .exp-item { display:grid; grid-template-columns:120px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid #f0f0f0; }
+  .exp-period { font-family:'JetBrains Mono',monospace; font-size:11px; color:#999; padding-top:2px; }
+  .exp-role { font-size:14px; font-weight:600; }
+  
+  /* Projects */
+  .proj-item { margin-bottom:16px; padding:12px; border:1px solid #eee; }
+  .proj-name { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .proj-desc { font-size:13px; color:#555; line-height:1.6; margin-bottom:8px; }
+  .proj-tech { display:flex; flex-wrap:wrap; gap:4px; }
+  .tech-tag { font-family:'JetBrains Mono',monospace; font-size:10px; color:#666; border:1px solid #ddd; padding:2px 6px; }
+  
+  /* Skills */
+  .skills { display:flex; flex-wrap:wrap; gap:6px; }
+  .skill { font-family:'JetBrains Mono',monospace; font-size:11px; border:1px solid #222; padding:4px 8px; color:#222; }
+  
+  /* Education */
+  .edu-item { padding:8px 0 8px 12px; border-left:2px solid #000; margin-bottom:8px; }
+  .edu-school { font-size:13px; font-weight:600; }
+  .edu-period { font-family:'JetBrains Mono',monospace; font-size:11px; color:#999; }
+  
+  /* Stats */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#eee; border:1px solid #eee; margin-bottom:24px; }
+  .stat { background:#fff; padding:12px; text-align:center; }
+  .stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:800; color:#000; }
+  .stat-lbl { font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
+  
+  /* Footer */
+  .footer { margin-top:32px; padding-top:16px; border-top:1px solid #eee; font-family:'JetBrains Mono',monospace; font-size:10px; color:#aaa; display:flex; justify-content:space-between; }
+  
+  @media print {
+    body { padding:20px; }
+    .section { page-break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="name">${data?.n || 'Developer'}</div>
+    <div class="role">${data?.r || 'Web3 Developer'}</div>
+    ${data?.sol ? `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#999;margin-top:8px">${data.sol}</div>` : ''}
+  </div>
+  ${data?.p ? `<div class="photo-block"><img src="${data.p}" alt="${data?.n}" class="photo" crossorigin="anonymous"/></div>` : ''}
+</div>
+
+<div class="meta">
+  ${data?.gh ? `<div class="meta-item"><span class="meta-label">GitHub</span><span class="meta-val">@${data.gh}</span></div>` : ''}
+  ${data?.tw ? `<div class="meta-item"><span class="meta-label">Twitter</span><span class="meta-val">@${data.tw}</span></div>` : ''}
+  ${data?.web ? `<div class="meta-item"><span class="meta-label">Website</span><span class="meta-val">${data.web}</span></div>` : ''}
+  ${ghData?.user?.publicRepos ? `<div class="meta-item"><span class="meta-label">Repos</span><span class="meta-val">${ghData.user.publicRepos}</span></div>` : ''}
+  <div class="meta-item"><span class="meta-label">YoChain Score</span><span class="score-badge">${data?.sol ? Math.round((ghData?.stats?.totalStars||0)*2 + (ghData?.user?.publicRepos||0) + (data?.tw?50:0) + projects.length*20) : 0}</span></div>
+</div>
+
+${data?.b ? `<div class="bio">${data.b}</div>` : ''}
+
+<div class="two-col">
+  <div>
+    ${expList.length > 0 ? `
+    <div class="section">
+      <div class="section-title">// Experience</div>
+      ${expList.map(e => { const s=e.split(':'); return `<div class="exp-item"><div class="exp-period">${s[0]?.trim()||''}</div><div class="exp-role">${s.slice(1).join(':').trim()||e}</div></div>`; }).join('')}
+    </div>` : ''}
+
+    ${projects.length > 0 ? `
+    <div class="section">
+      <div class="section-title">// Selected Work</div>
+      ${projects.map(p => `
+      <div class="proj-item">
+        <div class="proj-name">${p.name}${p.url ? ` <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999"> — ${p.url}</span>` : ''}</div>
+        ${p.desc ? `<div class="proj-desc">${p.desc}</div>` : ''}
+        ${p.tech ? `<div class="proj-tech">${p.tech.split(',').map(t=>`<span class="tech-tag">${t.trim()}</span>`).join('')}</div>` : ''}
+      </div>`).join('')}
+    </div>` : ''}
+  </div>
+
+  <div>
+    ${sklList.length > 0 ? `
+    <div class="section">
+      <div class="section-title">// Skills</div>
+      <div class="skills">${sklList.map(s=>`<span class="skill">${s}</span>`).join('')}</div>
+    </div>` : ''}
+
+    ${eduList.length > 0 ? `
+    <div class="section">
+      <div class="section-title">// Education</div>
+      ${eduList.map(e => { const s=e.split(':'); return `<div class="edu-item"><div class="edu-school">${s[1]?.trim()||e}</div>${s[0]?`<div class="edu-period">${s[0].trim()}</div>`:''}</div>`; }).join('')}
+    </div>` : ''}
+
+    ${data?.eco ? `
+    <div class="section">
+      <div class="section-title">// Ecosystems</div>
+      <div class="skills">${parseList(data.eco).map(e=>`<span class="skill">${e}</span>`).join('')}</div>
+    </div>` : ''}
+  </div>
+</div>
+
+<div class="footer">
+  <span>Generated by YoChain — yochain.tech</span>
+  <span>${new Date().toLocaleDateString()}</span>
+</div>
+
+<script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
     }
-    style.textContent = `
-      @media print {
-        /* Hide everything except CV content */
-        nav, .no-print, [style*="position: fixed"], [style*="position:fixed"] { display: none !important; }
-        
-        /* Reset page to white for print */
-        html, body { background: #fff !important; margin: 0; padding: 0; }
-        
-        /* CV content full width */
-        #cv-content {
-          background: #fff !important;
-          color: #111 !important;
-          min-height: auto !important;
-          width: 100% !important;
-          box-shadow: none !important;
-        }
-        
-        /* Hide decorative elements */
-        .bg-grid, .orb-1, .orb-2 { display: none !important; }
-        
-        /* Stop all animations */
-        * { animation: none !important; transition: none !important; }
-        
-        /* Fix text colors for white background */
-        h1, h2, h3, h4 { color: #000 !important; -webkit-text-fill-color: #000 !important; }
-        p, div, span { color: #333 !important; }
-        
-        /* Score: keep as accent color */
-        .score-glow { 
-          color: #14F195 !important; 
-          -webkit-text-fill-color: #14F195 !important; 
-          background: none !important;
-          text-shadow: none !important;
-        }
-        
-        /* Profile image */
-        .profile-img { 
-          filter: none !important; 
-          mix-blend-mode: normal !important; 
-          opacity: 1 !important;
-        }
-        
-        /* Borders */
-        [style*="border-bottom: 1px solid #111"], 
-        [style*="border: 1px solid #111"],
-        [style*="border-right: 1px solid #111"] {
-          border-color: #ddd !important;
-        }
-        
-        /* Backgrounds */
-        [style*="background: #000"], [style*="background:#000"],
-        [style*="background: rgba(5,5,5"], [style*="background: rgba(10,10,10"] {
-          background: #fff !important;
-        }
-        
-        /* Labels */
-        .neo-label { color: #888 !important; }
-        .neo-link { color: #333 !important; border-color: #ccc !important; }
-        
-        /* Glass badges */
-        .glass-badge {
-          background: #f5f5f5 !important;
-          border: 1px solid #ddd !important;
-          color: #555 !important;
-          backdrop-filter: none !important;
-        }
-        
-        /* Page break settings */
-        section, .cv-hero-grid { page-break-inside: avoid; }
-        
-        /* Adjust font sizes for print */
-        h1 { font-size: 48pt !important; }
-        
-        /* Bottom action bar hidden */
-        [style*="position: fixed"][style*="bottom: 0"] { display: none !important; }
-      }
-    `;
-
-    // Wait a tick then print
-    setTimeout(() => {
-      window.print();
-      setDownloading(false);
-    }, 300);
+    setDownloading(false);
   };
+
 
   const parseList = (str?:string) => !str ? [] : str.split(',').filter(s=>s.trim()).map(s=>s.trim());
   const parseProjects = (str?:string): ProjectEntry[] => !str ? [] :
