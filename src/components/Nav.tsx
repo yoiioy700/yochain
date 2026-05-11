@@ -41,23 +41,22 @@ export default function Nav() {
       .then(r => r.json())
       .then(profile => {
         if (profile?.sol && profile.sol !== connectedAddress) {
-          // Mismatch! User has minted identity on a different wallet
+          // Mismatch! Show blocking modal — do NOT sign out here
+          // (signOut causes session→null which immediately hides the modal)
           setRegisteredWallet(profile.sol);
           setWrongWallet(true);
-          // Force sign out from GitHub session
-          signOut({ redirect: false });
         }
       })
       .catch(() => {}); // silently ignore network errors
   }, [session, publicKey]);
 
-  // Reset check ref when session or wallet disconnects
+  // Reset check ref only when wallet disconnects (not when session changes)
   useEffect(() => {
-    if (!session?.user || !connected) {
+    if (!connected) {
       checkedRef.current = '';
       setWrongWallet(false);
     }
-  }, [session, connected]);
+  }, [connected]);
   // ──────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -150,6 +149,8 @@ export default function Nav() {
                 onClick={() => {
                   disconnect();
                   setWrongWallet(false);
+                  // Also sign out GitHub so user must re-authenticate with correct wallet
+                  signOut({ callbackUrl: '/' });
                 }}
                 style={{
                   background: 'transparent', color: '#666',
@@ -159,7 +160,7 @@ export default function Nav() {
                   cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase',
                 }}
               >
-                Disconnect
+                Sign Out
               </button>
             </div>
           </div>
@@ -244,7 +245,7 @@ export default function Nav() {
                 {connecting ? 'Connecting...' : connected && addrLabel ? addrLabel : 'Connect Wallet'}
               </button>
 
-              {session?.user && (
+              {session?.user && !wrongWallet && (
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <Link
                     href="/profile"
