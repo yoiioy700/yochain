@@ -20,8 +20,11 @@ async function getProfile(username: string) {
 
 // Blinks spec requires these headers in addition to CORS headers
 const BLINKS_HEADERS = {
-  ...ACTIONS_CORS_HEADERS,
-  'X-Action-Version': '2.1.3',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Encoding, x-sdk-variant, x-sdk-version, x-blockchain-ids, x-action-version',
+  'Content-Type': 'application/json',
+  'X-Action-Version': '1.0',
   'X-Blockchain-Ids': 'solana:devnet',
 };
 
@@ -134,9 +137,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ wal
     const serialized = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
 
     const payload: ActionPostResponse = {
+      type: 'transaction',
       transaction: serialized.toString('base64'),
       message: `Sent ${amount} SOL to ${profile?.name || 'Developer'}!`,
-    };
+    } as any;
 
     return Response.json(payload, { headers: BLINKS_HEADERS });
   } catch (err) {
