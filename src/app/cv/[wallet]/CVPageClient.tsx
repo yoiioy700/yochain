@@ -120,6 +120,21 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
           -webkit-text-fill-color: transparent;
         }
 
+        /* Export Mode Fixes for html2canvas */
+        .export-mode .bg-grid, .export-mode .orb-1, .export-mode .orb-2 { display: none !important; }
+        .export-mode .cv-root { background: #000 !important; }
+        .export-mode * { animation: none !important; transition: none !important; }
+        .export-mode .score-glow { background: none !important; -webkit-text-fill-color: #14F195 !important; color: #14F195 !important; text-shadow: none !important; }
+        .export-mode .profile-img { mix-blend-mode: normal !important; filter: none !important; }
+        .export-mode .text-name { font-size: 5.5rem !important; text-shadow: none !important; }
+        .export-mode .text-role { font-size: 1.5rem !important; }
+        .export-mode .text-bio { font-size: 1.4rem !important; }
+        .export-mode .text-stat { font-size: 2.5rem !important; }
+        .export-mode .pad-hero { padding: 4rem !important; }
+        .export-mode .pad-bio { padding: 4rem !important; }
+        .export-mode .pad-main { padding: 4rem !important; }
+        .export-mode .cv-hero-grid { min-height: auto !important; }
+
         @media print {
           .bg-grid, .orb-1, .orb-2 { display: none !important; }
           .cv-root { background: #000 !important; }
@@ -146,7 +161,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
         <div className="cv-hero-grid rev d1" style={{display:'grid', gridTemplateColumns:'1fr 340px', minHeight:'75vh', borderBottom:'1px solid #111', background:'linear-gradient(to bottom, rgba(10,10,10,0.8), #000)'}}>
 
           {/* Left: Name + meta */}
-          <div style={{padding:'clamp(2rem,5vw,5rem)', display:'flex', flexDirection:'column', justifyContent:'center', borderRight:'1px solid #111', position:'relative'}}>
+          <div className="pad-hero" style={{padding:'clamp(2rem,5vw,5rem)', display:'flex', flexDirection:'column', justifyContent:'center', borderRight:'1px solid #111', position:'relative'}}>
             
             {/* Top row micro-data */}
             <div style={{display:'flex', gap:'2rem', flexWrap:'wrap', marginBottom:'5rem'}}>
@@ -183,10 +198,10 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
 
             {/* Giant name */}
             <div style={{position:'relative', zIndex:1}}>
-              <h1 style={{fontSize:'clamp(3.5rem, 7vw, 7.5rem)', fontWeight:800, lineHeight:0.9, letterSpacing:'-0.03em', color:'#fff', textTransform:'uppercase', margin:'0 0 1.5rem 0', wordBreak:'break-word', textShadow:'0 20px 40px rgba(0,0,0,0.5)'}}>
+              <h1 className="text-name" style={{fontSize:'clamp(3.5rem, 7vw, 7.5rem)', fontWeight:800, lineHeight:0.9, letterSpacing:'-0.03em', color:'#fff', textTransform:'uppercase', margin:'0 0 1.5rem 0', wordBreak:'break-word', textShadow:'0 20px 40px rgba(0,0,0,0.5)'}}>
                 {data.n || 'NATIVE BUILDER'}
               </h1>
-              <div style={{fontSize:'clamp(1.2rem, 2vw, 1.8rem)', color:'#888', fontWeight:400, marginBottom:'3rem', letterSpacing:'-0.01em'}}>
+              <div className="text-role" style={{fontSize:'clamp(1.2rem, 2vw, 1.8rem)', color:'#888', fontWeight:400, marginBottom:'3rem', letterSpacing:'-0.01em'}}>
                 {data.r || 'Web3 Developer'}
               </div>
 
@@ -207,7 +222,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
             {/* Photo fills top */}
             <div style={{flex:1, background:'#050505', overflow:'hidden', position:'relative', minHeight:'350px'}}>
               {data.p ? (
-                <img src={data.p} alt={data.n} style={{width:'100%', height:'100%', objectFit:'cover', filter:'grayscale(100%) contrast(1.2)', opacity:0.85, transition:'all 0.5s', mixBlendMode:'luminosity'}} onMouseEnter={(e)=>e.currentTarget.style.filter='grayscale(0%) contrast(1)'} onMouseLeave={(e)=>e.currentTarget.style.filter='grayscale(100%) contrast(1.2)'}/>
+                <img src={data.p} alt={data.n} className="profile-img" style={{width:'100%', height:'100%', objectFit:'cover', filter:'grayscale(100%) contrast(1.2)', opacity:0.85, transition:'all 0.5s', mixBlendMode:'luminosity'}} onMouseEnter={(e)=>e.currentTarget.style.filter='grayscale(0%) contrast(1)'} onMouseLeave={(e)=>e.currentTarget.style.filter='grayscale(100%) contrast(1.2)'}/>
               ) : (
                 <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'6rem', color:'#111', fontWeight:800, fontFamily:"'JetBrains Mono', monospace", background:'linear-gradient(135deg, #111, #000)'}}>
                   {data.n?.charAt(0)?.toUpperCase() || '?'}
@@ -235,9 +250,9 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
 
         {/* BIO BAND — full width */}
         {data.b && (
-          <div className="rev d2" style={{padding:'clamp(3rem,6vw,5rem) clamp(2rem,5vw,5rem)', borderBottom:'1px solid #111', display:'flex', gap:'4rem', alignItems:'center', background:'rgba(255,255,255,0.01)'}}>
+          <div className="rev d2 pad-bio" style={{padding:'clamp(3rem,6vw,5rem) clamp(2rem,5vw,5rem)', borderBottom:'1px solid #111', display:'flex', gap:'4rem', alignItems:'center', background:'rgba(255,255,255,0.01)'}}>
             <div className="neo-label" style={{flexShrink:0, writingMode:'vertical-rl', transform:'rotate(180deg)', letterSpacing:'0.2em'}}>BIO</div>
-            <p style={{fontSize:'clamp(1.2rem, 2.5vw, 1.8rem)', lineHeight:1.6, color:'#b0b0b0', fontWeight:300, margin:0, maxWidth:'900px'}}>
+            <p className="text-bio" style={{fontSize:'clamp(1.2rem, 2.5vw, 1.8rem)', lineHeight:1.6, color:'#b0b0b0', fontWeight:300, margin:0, maxWidth:'900px'}}>
               {data.b}
             </p>
           </div>
@@ -254,7 +269,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
             { label: 'PROJECTS', val: projects.length || '—' },
           ].map((s, i, arr) => (
             <div key={i} style={{flex:1, padding:'2.5rem 1.5rem', borderRight: i < arr.length-1 ? '1px solid #111' : 'none', textAlign:'center', transition:'background 0.3s'}} onMouseEnter={(e)=>e.currentTarget.style.background='rgba(20,241,149,0.02)'} onMouseLeave={(e)=>e.currentTarget.style.background='transparent'}>
-              <div style={{fontSize:'clamp(1.8rem, 3.5vw, 3rem)', fontWeight:800, fontFamily:"'JetBrains Mono', monospace", color:'#fff', lineHeight:1, marginBottom:'0.75rem'}}>
+              <div className="text-stat" style={{fontSize:'clamp(1.8rem, 3.5vw, 3rem)', fontWeight:800, fontFamily:"'JetBrains Mono', monospace", color:'#fff', lineHeight:1, marginBottom:'0.75rem'}}>
                 {s.val}
               </div>
               <div className="neo-label">{s.label}</div>
@@ -266,7 +281,7 @@ function SolanaNativeTemplate({data, solData, ghData, parseList, projects, reput
         <div className="cv-content-grid rev d4" style={{display:'grid', gridTemplateColumns:'2fr 1px 1fr', minHeight:'400px'}}>
 
           {/* WIDE LEFT: Experience + Projects */}
-          <div style={{padding:'clamp(3rem,5vw,6rem) clamp(2rem,5vw,5rem)', display:'flex', flexDirection:'column', gap:'5rem'}}>
+          <div className="pad-main" style={{padding:'clamp(3rem,5vw,6rem) clamp(2rem,5vw,5rem)', display:'flex', flexDirection:'column', gap:'5rem'}}>
 
             {expList.length > 0 && (
               <div>
@@ -530,7 +545,24 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
     try {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
-      const canvas = await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#000000',logging:false,imageTimeout:15000});
+      
+      const canvas = await html2canvas(el,{
+        scale:2,
+        useCORS:true,
+        allowTaint:true,
+        backgroundColor:'#000000',
+        windowWidth: 1200, // Enforce a standard desktop width
+        logging:false,
+        imageTimeout:15000,
+        onclone: (clonedDoc) => {
+          // Apply 'export-mode' to fix clamp() and unsupported CSS in html2canvas
+          const clonedEl = clonedDoc.getElementById('cv-content');
+          if (clonedEl) {
+            clonedEl.classList.add('export-mode');
+          }
+        }
+      });
+      
       const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = (canvas.height*pdfW)/canvas.width;
