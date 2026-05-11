@@ -582,7 +582,11 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
     const p = new URLSearchParams(window.location.search).get('d');
     if(!p) return;
     try{
-      const decoded = JSON.parse(atob(p));
+      // Safe base64 utf-8 decoding for emojis/multi-byte chars
+      const binString = atob(p);
+      const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0)!);
+      const decodedStr = new TextDecoder().decode(bytes);
+      const decoded = JSON.parse(decodedStr);
       setData(decoded);
       
       const promises = [];

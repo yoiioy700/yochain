@@ -3,9 +3,30 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/profiles — return all profiles ordered by score
-export async function GET() {
+// GET /api/profiles — return all profiles ordered by score, or a single profile by username
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const username = searchParams.get('username');
+
+    if (username) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', username)
+        .single();
+      
+      if (error) {
+        if (error.code === 'PGRST116') return NextResponse.json(null); // Not found
+        throw error;
+      }
+      return NextResponse.json({
+        ...data,
+        profileUrl: data.profile_url,
+        savedAt: data.saved_at
+      });
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')

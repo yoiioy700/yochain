@@ -184,6 +184,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const { publicKey, connected } = useWallet();
   const [walletFilled, setWalletFilled] = useState(false);
+  const [isExistingProfile, setIsExistingProfile] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/');
@@ -222,6 +223,23 @@ export default function BuilderPage() {
     if (session?.user && !name) setName(session.user.name || '');
     if (session?.user?.image && !photoUrl) setPhotoUrl(session.user.image);
     if (session?.user?.email && !email) setEmail(session.user.email);
+    
+    // Fetch existing profile to enforce same wallet
+    if (session?.user && !isExistingProfile) {
+      const ghUser = (session as any).githubUsername || session.user.name;
+      if (ghUser) {
+        fetch(`/api/profiles?username=${ghUser}`).then(r => r.json()).then(data => {
+          if (data && data.sol) {
+            setIsExistingProfile(true);
+            setSolAddress(data.sol);
+            if(data.name) setName(data.name);
+            if(data.role) setRole(data.role);
+            if(data.photo) setPhotoUrl(data.photo);
+            if(data.tw) setTwitterHandle(data.tw);
+          }
+        }).catch(e => console.error(e));
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
@@ -441,9 +459,9 @@ export default function BuilderPage() {
             {activeTab === 1 && (
               <div>
                 <EntryList label="Education" entries={education} setter={setEducation}
-                  datePlaceholder="2020–2024" titlePlaceholder="Institut Teknologi Bandung" />
+                  titlePlaceholder="Institut Teknologi Bandung" />
                 <EntryList label="Experience" entries={experience} setter={setExperience}
-                  datePlaceholder="2022–Now" titlePlaceholder="Freelance Designer" />
+                  titlePlaceholder="Freelance Designer" />
                 <div className="form-group">
                   <label className="form-label">Skills (Comma Separated)</label>
                   <ComboboxInput multi className="form-input" placeholder="Photoshop, Next.js, Solana..." value={skillsLine} onChange={setSkillsLine} suggestions={SUGGESTIONS_SKILLS} style={{ minHeight: '80px', paddingTop: '0.75rem', verticalAlign: 'top' }} />
@@ -488,7 +506,7 @@ export default function BuilderPage() {
                 <div className="form-group">
                   <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>Solana Address <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(for Onchain Score &amp; SNS)</span></span>
-                    {connected && (
+                    {connected && !isExistingProfile && (
                       <button
                         type="button"
                         onClick={autofillWallet}
@@ -512,7 +530,8 @@ export default function BuilderPage() {
                       </button>
                     )}
                   </label>
-                  <input type="text" className="form-input" placeholder="5zi... (or click Autofill if wallet connected)" value={solAddress} onChange={e => setSolAddress(e.target.value)} />
+                  <input type="text" className="form-input" placeholder="5zi... (or click Autofill if wallet connected)" value={solAddress} onChange={e => { if(!isExistingProfile) setSolAddress(e.target.value) }} readOnly={isExistingProfile} style={{ opacity: isExistingProfile ? 0.6 : 1, cursor: isExistingProfile ? 'not-allowed' : 'text' }} />
+                  {isExistingProfile && <div style={{ fontSize: '0.7rem', color: '#ffaa00', marginTop: '0.5rem', background: '#0a0a0a', padding: '0.5rem', borderLeft: '2px solid #ffaa00' }}>🔒 Wallet terkunci karena kamu sudah pernah mint/save profile sebelumnya. Harus konek wallet yg sama pas awal.</div>}
                 </div>
 
               </div>
