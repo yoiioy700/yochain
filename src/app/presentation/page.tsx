@@ -313,7 +313,7 @@ export default function Presentation() {
         return (
           <div 
             key={slide.id}
-            className={\`slide-container \${isActive ? 'active' : ''}\`}
+            className={`slide-container ${isActive ? 'active' : ''}`}
             style={{
               position: 'absolute',
               inset: 0,
@@ -329,7 +329,7 @@ export default function Presentation() {
         );
       })}
 
-      <style dangerouslySetInnerHTML={{__html: \`
+      <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700;800&display=swap');
         
         /* Staggered text animations triggered by active class */
@@ -347,7 +347,7 @@ export default function Presentation() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-      \`}} />
+      `}} />
     </div>
   );
 }
