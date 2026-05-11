@@ -495,7 +495,7 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
       // URI must be a full valid URL — include gh & d so My Profile can reconstruct the CV link
       const baseUrl = window.location.origin;
       const d = new URLSearchParams(window.location.search).get('d') || '';
-      const uri = `${baseUrl}/api/mint/metadata?n=${encodeURIComponent(data?.n || 'Builder')}&r=${encodeURIComponent(data?.r || 'Web3 Dev')}&p=${encodeURIComponent(data?.p || '')}&gh=${encodeURIComponent(data?.gh || '')}&d=${encodeURIComponent(d)}`;
+      const uri = `${baseUrl}/api/mint/metadata?n=${encodeURIComponent(data?.n || 'Builder')}&r=${encodeURIComponent(data?.r || 'Web3 Dev')}&p=${encodeURIComponent(data?.p || '')}&gh=${encodeURIComponent(data?.gh || '')}`;
       const name = `YoChain ID: ${data?.n || 'Builder'}`;
 
       console.log('[Mint] Name:', name);
@@ -580,47 +580,68 @@ export default function CVPageClient({ wallet }: { wallet: string }) {
 
   useEffect(()=>{
     const p = new URLSearchParams(window.location.search).get('d');
-    if(!p) return;
-    try{
-      // Safe base64 utf-8 decoding for emojis/multi-byte chars
-      const binString = atob(p);
-      const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0)!);
-      const decodedStr = new TextDecoder().decode(bytes);
-      const decoded = JSON.parse(decodedStr);
-      setData(decoded);
-      
-      const promises = [];
-      if(decoded.gh) promises.push(fetch(`/api/github?username=${decoded.gh}`).then(r=>r.json()).then(setGhData).catch(console.error));
-      if(decoded.sol) promises.push(fetch(`/api/solana?wallet=${decoded.sol}`).then(r=>r.json()).then(setSolData).catch(console.error));
-      
-      Promise.allSettled(promises).then(() => setIsLoadingScore(false));
+    
+    const loadProfileData = (base64Payload: string) => {
+      try {
+        const binString = atob(base64Payload);
+        const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0)!);
+        const decodedStr = new TextDecoder().decode(bytes);
+        const decoded = JSON.parse(decodedStr);
+        setData(decoded);
+        
+        const promises = [];
+        if(decoded.gh) promises.push(fetch(`/api/github?username=${decoded.gh}`).then(r=>r.json()).then(setGhData).catch(console.error));
+        if(decoded.sol) promises.push(fetch(`/api/solana?wallet=${decoded.sol}`).then(r=>r.json()).then(setSolData).catch(console.error));
+        
+        Promise.allSettled(promises).then(() => setIsLoadingScore(false));
 
-      // Auto-save to Supabase so leaderboard & profile page work
-      const username = decoded.gh || wallet;
-      if (username) {
-        const profileUrl = window.location.href;
-        fetch('/api/profiles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username,
-            name: decoded.n,
-            role: decoded.r,
-            photo: decoded.p,
-            ecosystems: decoded.eco ? decoded.eco.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
-            focus: decoded.foc ? decoded.foc.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
-            available: decoded.avail === '1',
-            score: 0,
-            gh: decoded.gh || '',
-            tw: decoded.tw || '',
-            sol: decoded.sol || '',
-            profileUrl,
-            savedAt: new Date().toISOString(),
-          }),
-        }).catch(() => {});
+        // Auto-save to Supabase so leaderboard & profile page work
+        const username = decoded.gh || wallet;
+        if (username) {
+          fetch('/api/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: username,
+              name: decoded.n,
+              profileUrl: `${window.location.origin}/cv/${username}?d=${base64Payload}`,
+              role: decoded.r,
+              photo: decoded.p,
+              tw: decoded.tw,
+              sol: decoded.sol
+            })
+          }).catch(console.error);
+        }
+      } catch (err) {
+        console.error("Error decoding profile payload:", err);
       }
-    }catch(e){console.error(e); setIsLoadingScore(false);}
-  },[]);
+    };
+
+    if (p) {
+      loadProfileData(p);
+    } else {
+      // If 'd' is missing (e.g. from a clean URL or new NFT), fetch it from Supabase!
+      fetch(`/api/profiles?username=${wallet}`)
+        .then(r => r.json())
+        .then(profile => {
+          if (profile && profile.profileUrl) {
+            try {
+              const url = new URL(profile.profileUrl, window.location.origin);
+              const dbPayload = url.searchParams.get('d');
+              if (dbPayload) {
+                loadProfileData(dbPayload);
+                return;
+              }
+            } catch (e) {
+              console.error("Failed to parse db profileUrl", e);
+            }
+          }
+        })
+        .catch(console.error);
+    }
+  }, [wallet]);
+
+
 
   // After GitHub + Solana data load, update score in Supabase
   useEffect(() => {

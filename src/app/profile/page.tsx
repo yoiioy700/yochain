@@ -16,9 +16,9 @@ function ViewProfileButton({ asset }: { asset: any }) {
       const url = new URL(jsonUri);
       const gh = url.searchParams.get('gh') || url.searchParams.get('u') || '';
       const d  = url.searchParams.get('d')  || '';
-      if (gh) {
+      if (gh && d) {
         // Build direct CV link from NFT metadata params
-        setProfileUrl(d ? `/cv/${gh}?d=${d}` : `/cv/${gh}`);
+        setProfileUrl(`/cv/${gh}?d=${d}`);
         return;
       }
     } catch (_) {}
