@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -121,7 +121,7 @@ export default function Nav() {
             </button>
 
             {session?.user && (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <Link
                   href="/profile"
                   className="btn btn-outline"
@@ -136,6 +136,31 @@ export default function Nav() {
                 >
                   Go to Builder
                 </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid #2a2a2a',
+                    borderRadius: '100px',
+                    color: '#555',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '0.72rem',
+                    padding: '0.45rem 0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    letterSpacing: '0.04em',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.color = '#ff6b6b';
+                    e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.color = '#555';
+                    e.currentTarget.style.borderColor = '#2a2a2a';
+                  }}
+                >
+                  Sign Out
+                </button>
               </div>
             )}
           </div>
