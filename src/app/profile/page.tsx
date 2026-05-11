@@ -52,7 +52,7 @@ function ViewProfileButton({ asset, sessionGh }: { asset: any; sessionGh: string
 
 export default function ProfilePage() {
   const { data: session } = useSession();
-  const sessionGh = (session?.user as any)?.login || (session?.user as any)?.username || '';
+  const sessionGh = (session as any)?.githubUsername || '';
   const { publicKey, connected } = useWallet();
   const [identities, setIdentities] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
